@@ -1,0 +1,10 @@
+pyrogram
+tgcrypto
+quart
+aiohttp
+hypercorn
+
+telethon
+cryptg
+requests
+python-dotenv

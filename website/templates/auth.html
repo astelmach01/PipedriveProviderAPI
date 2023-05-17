@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Telegram Authorization</title>
+  </head>
+  <body>
+    <h1>Telegram Authorization</h1>
+    <form action="/auth" method="POST">
+      <label for="phone">Phone Number:</label>
+      <input type="text" id="phone" name="phone" value="{{ phone_number }}">
+      <br><br>
+      <label for="code">Authorization Code:</label>
+      <input type="text" id="code" name="code">
+      <br><br>
+      <input type="submit" value="Submit">
+      <input type="hidden" name="phone_code_hash" value="{{ phone_code_hash }}">
+    </form>
+  </body>
+</html>

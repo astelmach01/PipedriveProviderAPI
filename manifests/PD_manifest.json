@@ -1,0 +1,9 @@
+{
+  "version": "v202101",
+  "endpoints": {
+    "getConversations": "https://telegram-crm-plugin.herokuapp.com/api/channels/:providerChannelId/conversations",
+    "getConversationById": "https://telegram-crm-plugin.herokuapp.com/api/channels/:providerChannelId/conversations/:sourceConversationId",
+    "postMessage": "https://telegram-crm-plugin.herokuapp.com/api/channels/:providerChannelId/messages",
+    "getSenderById": "https://telegram-crm-plugin.herokuapp.com/api/channels/:providerChannelId/senders/:senderId"
+  }
+}
