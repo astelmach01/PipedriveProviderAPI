@@ -6,9 +6,6 @@
 *.session
 *.session-journal
 
-
-*.txt
-
 local.py
 post.py
 
