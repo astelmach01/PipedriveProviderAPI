@@ -8,4 +8,5 @@ telethon
 cryptg
 requests
 python-dotenv
+pytest
 pydantic
