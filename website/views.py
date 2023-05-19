@@ -7,7 +7,7 @@ import aiohttp
 from quart import Blueprint, request, render_template, redirect
 
 from website.api.channels.util import create_channel
-from settings import settings
+from website.settings import settings
 
 views = Blueprint("views", __name__)
 
