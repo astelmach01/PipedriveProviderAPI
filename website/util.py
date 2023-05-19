@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from settings import settings
+from website.settings import settings
 
 import aiohttp
 

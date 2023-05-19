@@ -3,7 +3,7 @@ import os
 import aiohttp
 from quart import Blueprint, redirect, request
 
-from settings import settings
+from website.settings import settings
 
 auth = Blueprint("auth", __name__)
 
