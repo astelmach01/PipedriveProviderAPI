@@ -41,7 +41,6 @@ async def messages(providerChannelId):
 # Get conversation by ID
 @channels.route("/<providerChannelId>/conversations/<sourceConversationId>")
 async def get_convo_by_id(providerChannelId, sourceConversationId):
-
     # forward to telegram API here
 
     fake_response = {

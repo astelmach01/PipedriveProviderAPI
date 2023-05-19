@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from settings import settings
 
 import aiohttp
 
@@ -7,14 +8,7 @@ async def send_message_to_Telegram(recipient, msg):
     print("Sending message from Pipedrive to Telegram")
 
     # this is where we call our API
-    try:
-        await client.send_message(recipient, msg)
-        print("Message sent successfully from Pipedrive to Telegram")
-        return True
-    except Exception as e:
-        print("Error sending message from Pipedrive to Telegram")
-        print(e)
-        return False
+    api_url = settings.TELEGRAM_API_URL
 
 
 async def send_message_to_PD(
@@ -23,7 +17,6 @@ async def send_message_to_PD(
     print("Sending message from Telegram to Pipedrive")
 
     created_at = time.strftime("%Y-%m-%d %H:%M")
-
 
     request_options = {
         "uri": "https://api.pipedrive.com/v1/channels/messages/receive",

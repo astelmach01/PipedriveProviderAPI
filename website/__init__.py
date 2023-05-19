@@ -1,14 +1,12 @@
 import os
 
 from dotenv import load_dotenv
-from quart import Quart, redirect, render_template, request
-
+from quart import Quart
 
 load_dotenv()
 
 
 def create_app():
-
     app = Quart(__name__)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 

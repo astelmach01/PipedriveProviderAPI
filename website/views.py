@@ -1,11 +1,13 @@
 """
 Routes
 """
-import os
+from urllib.parse import urlencode
 
-from quart import Blueprint, request, render_template
+import aiohttp
+from quart import Blueprint, request, render_template, redirect
 
 from website.api.channels.util import create_channel
+from settings import settings
 
 views = Blueprint("views", __name__)
 
@@ -20,8 +22,30 @@ async def send_code():
         pipedrive_client_id = form.get("pipedrive_client_id")
         pipedrive_client_secret = form.get("pipedrive_client_secret")
 
-        # make an api call to our Telegram API here
-        return "Call our Telegram API"
+        # Prepare the payload for the request to the Telegram API
+        payload = {
+            "phone_number": phone_number,
+            "telegram_api_id": telegram_api_id,
+            "telegram_api_hash": telegram_api_hash,
+            "pipedrive_client_id": pipedrive_client_id,
+            "pipedrive_client_secret": pipedrive_client_secret
+        }
+
+        api_url = settings.TELEGRAM_API_URL
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url + "/create", data=payload) as response:
+                if response.status == 200:
+                    phone_code_hash = None  # get this from database
+
+                    return render_template("auth.html",
+                                           phone_number=phone_number,
+                                           phone_code_hash=phone_code_hash,
+                                           )
+
+                else:
+                    # Request failed, handle the error
+                    return "Failed to call Telegram API"
 
     else:
         return await render_template("base.html")

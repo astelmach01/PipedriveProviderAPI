@@ -1,6 +1,9 @@
 import os
 
-from quart import Blueprint, redirect, render_template, request
+import aiohttp
+from quart import Blueprint, redirect, request
+
+from settings import settings
 
 auth = Blueprint("auth", __name__)
 
@@ -8,25 +11,37 @@ auth = Blueprint("auth", __name__)
 @auth.route("/", methods=["POST"])
 async def authenticate():
     form = await request.form
-    phone_number = form.get("phone")
+    phone_number = form.get("phone_number")
     phone_code_hash = form.get("phone_code_hash")
-    phone_code = form.get("code")
+    auth_code = form.get("auth_code")
 
-    print(phone_number, phone_code_hash, phone_code)
+    print(phone_number, phone_code_hash, auth_code)
 
-    try:
-        await client.sign_in(phone_number, phone_code_hash, phone_code)
-        await client.disconnect()
-        await client.start()
-        auth_url = f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state=random_string&redirect_uri={redirect_uri}"
+    payload = {
+        "phone_number": phone_number,
+        "phone_code_hash": phone_code_hash,
+        "auth_code": auth_code,
+        "from_url": request.host_url,
+    }
 
-        return redirect(auth_url)
+    api_url = settings.TELEGRAM_API_URL
 
-    except BadRequest as e:
-        return f"An error occurred: {e}"
-    except SessionPasswordNeeded:
-        # Handle two-factor authentication
-        return await render_template("two_factor_auth.html")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(api_url + "/verify", data=payload) as response:
+            if response.status == 200:
+                app_domain = request.host_url
+                redirect_uri = (
+                    app_domain.replace("http://", "https://")
+                    + "auth/pipedrive/callback"
+                )
+
+                pipedrive_client_id = None  # get from database
+
+                auth_url = (
+                    f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
+                    f"=random_string&redirect_uri={redirect_uri}"
+                )
+                return redirect(auth_url)
 
 
 @auth.route("/pipedrive")
