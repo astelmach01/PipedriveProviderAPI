@@ -1,9 +1,19 @@
 import os
+import logging
 
 from dotenv import load_dotenv
 from quart import Quart
 
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
 
 def create_app():
