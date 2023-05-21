@@ -30,7 +30,8 @@ async def authenticate():
                     + "auth/pipedrive/callback"
                 )
 
-                pipedrive_client_id = None  # get from database or sent it in response
+                res = await response.json()
+                pipedrive_client_id = res['pipedrive_client_id']  # get from database or sent it in response
 
                 auth_url = (
                     f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
