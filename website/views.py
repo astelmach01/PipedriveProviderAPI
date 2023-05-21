@@ -2,8 +2,6 @@
 Routes
 """
 import logging
-from urllib.parse import urlencode
-
 import aiohttp
 from quart import Blueprint, request, render_template, redirect
 
@@ -37,7 +35,7 @@ async def send_code():
         logging.info(f"Sending request to {api_url}/create with params {payload}")
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(api_url + "/create", data=payload) as response:
+            async with session.post(api_url + "/create", json=payload) as response:
                 if response.status == 200:
                     phone_code_hash = None  # get this from database
 
