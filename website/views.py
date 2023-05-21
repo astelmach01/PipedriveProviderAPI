@@ -1,6 +1,7 @@
 """
 Routes
 """
+import logging
 from urllib.parse import urlencode
 
 import aiohttp
@@ -32,6 +33,8 @@ async def send_code():
         }
 
         api_url = settings.TELEGRAM_API_URL
+        
+        logging.info(f"Sending request to {api_url}/create with params {payload}")
 
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url + "/create", data=payload) as response:
