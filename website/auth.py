@@ -12,22 +12,17 @@ auth = Blueprint("auth", __name__)
 async def authenticate():
     form = await request.form
     phone_number = form.get("phone_number")
-    phone_code_hash = form.get("phone_code_hash")
     auth_code = form.get("auth_code")
-
-    print(phone_number, phone_code_hash, auth_code)
 
     payload = {
         "phone_number": phone_number,
-        "phone_code_hash": phone_code_hash,
         "auth_code": auth_code,
-        "from_url": request.host_url,
     }
 
     api_url = settings.TELEGRAM_API_URL
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(api_url + "/verify", data=payload) as response:
+        async with session.post(api_url + "/verify", json=payload) as response:
             if response.status == 200:
                 app_domain = request.host_url
                 redirect_uri = (
@@ -35,7 +30,7 @@ async def authenticate():
                     + "auth/pipedrive/callback"
                 )
 
-                pipedrive_client_id = None  # get from database
+                pipedrive_client_id = None  # get from database or sent it in response
 
                 auth_url = (
                     f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"

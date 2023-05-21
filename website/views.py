@@ -27,22 +27,21 @@ async def send_code():
             "telegram_api_id": telegram_api_id,
             "telegram_api_hash": telegram_api_hash,
             "pipedrive_client_id": pipedrive_client_id,
-            "pipedrive_client_secret": pipedrive_client_secret
+            "pipedrive_client_secret": pipedrive_client_secret,
         }
 
         api_url = settings.TELEGRAM_API_URL
-        
-        logging.info(f"Sending request to {api_url}/create with params {payload}")
+
+        logging.info("Sending post request")
 
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url + "/create", json=payload) as response:
+                logging.info(response.json())
                 if response.status == 200:
-                    phone_code_hash = None  # get this from database
-
-                    return render_template("auth.html",
-                                           phone_number=phone_number,
-                                           phone_code_hash=phone_code_hash,
-                                           )
+                    return render_template(
+                        "auth.html",
+                        phone_number=phone_number,
+                    )
 
                 else:
                     # Request failed, handle the error
