@@ -36,9 +36,10 @@ async def send_code():
 
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url + "/create", json=payload) as response:
-                logging.info(response.json())
+                res = await response.json()
+                logging.info(res)
                 if response.status == 200:
-                    return render_template(
+                    return await render_template(
                         "auth.html",
                         phone_number=phone_number,
                     )
