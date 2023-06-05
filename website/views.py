@@ -36,7 +36,7 @@ async def send_code():
         logging.info("Sending post request")
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(api_url + "/send_code_1", json=payload) as response:
+            async with session.post(api_url + "send_code_1", json=payload) as response:
                 res = await response.json()
                 logging.info(res)
                 if res['success']:

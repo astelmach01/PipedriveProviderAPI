@@ -27,14 +27,14 @@ async def auth1():
     # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
         # create the first session string
-        async with session.post(api_url + "/create_string_1", json=payload) as response:
+        async with session.post(api_url + "create_string_1", json=payload) as response:
             res = await response.json()
             if res['success']:
                 payload = {
                     "phone_number": phone_number
                 }
                 # create the second_session_string
-                async with session.post(api_url + "/send_code_2", json=payload) as response:
+                async with session.post(api_url + "send_code_2", json=payload) as response:
                     res = await response.json()
                     if res['success']:
                         phone_code_hash = res['phone_code_hash']
@@ -63,7 +63,7 @@ async def auth2():
     # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
         # create the first session string
-        async with session.post(api_url + "/create_string_2", json=payload) as response:
+        async with session.post(api_url + "create_string_2", json=payload) as response:
             res = await response.json()
             if res['success']:
                 pipedrive_client_id = res['pipedrive_client_id']
