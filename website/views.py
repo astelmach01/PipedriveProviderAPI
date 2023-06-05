@@ -38,7 +38,7 @@ async def send_code():
 
         # for session stickiness
         async with aiohttp.ClientSession() as session:
-            async with session.post(api_url + "sync", json=payload) as response:
+            async with session.get(api_url + "sync", json=payload) as response:
                 res = await response.json()
                 logging.info(res)
 

@@ -66,13 +66,14 @@ async def auth2():
         async with session.post(api_url + "create_string_2", json=payload) as response:
             res = await response.json()
             if res["success"]:
-                pipedrive_client_id = res["pipedrive_client_id"]
 
                 app_domain = request.host_url
                 redirect_uri = (
                     app_domain.replace("http://", "https://")
                     + "auth/pipedrive/callback"
                 )
+
+                pipedrive_client_id = res["pipedrive_client_id"]
 
                 auth_url = (
                     f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
