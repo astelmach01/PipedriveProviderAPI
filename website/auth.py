@@ -1,37 +1,83 @@
 import os
 
 import aiohttp
-from quart import Blueprint, redirect, request
+import requests
+from quart import Blueprint, redirect, request, render_template
 
 from website.settings import settings
 
 auth = Blueprint("auth", __name__)
 
 
-@auth.route("/", methods=["POST"])
-async def authenticate():
+@auth.route("/auth1", methods=["POST"])
+async def auth1():
     form = await request.form
     phone_number = form.get("phone_number")
+    phone_code_hash = form.get("phone_code_hash")
     auth_code = form.get("auth_code")
 
     payload = {
         "phone_number": phone_number,
+        "phone_code_hash": phone_code_hash,
         "auth_code": auth_code,
     }
 
     api_url = settings.TELEGRAM_API_URL
 
+    # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
-        async with session.post(api_url + "/verify", json=payload) as response:
-            if response.status == 200:
+        # create the first session string
+        async with session.post(api_url + "/create_string_1", json=payload) as response:
+            res = await response.json()
+            if res['success']:
+                payload = {
+                    "phone_number": phone_number
+                }
+                # create the second_session_string
+                async with session.post(api_url + "/send_code_2", json=payload) as response:
+                    res = await response.json()
+                    if res['success']:
+                        phone_code_hash = res['phone_code_hash']
+                        return await render_template(
+                            "auth2.html",
+                            phone_number=phone_number,
+                            phone_code_hash=phone_code_hash
+                        )
+
+
+@auth.route('/auth2', methods=["POST"])
+async def auth2():
+    form = await request.form
+    phone_number = form.get("phone_number")
+    phone_code_hash = form.get("phone_code_hash")
+    auth_code = form.get("auth_code")
+
+    payload = {
+        "phone_number": phone_number,
+        "phone_code_hash": phone_code_hash,
+        "auth_code": auth_code,
+    }
+
+    api_url = settings.TELEGRAM_API_URL
+
+    # when we have received the phone number and auth code from the user
+    async with aiohttp.ClientSession() as session:
+        # create the first session string
+        async with session.post(api_url + "/create_string_2", json=payload) as response:
+            res = await response.json()
+            if res['success']:
+                pipedrive_client_id = res['pipedrive_client_id']
+
                 app_domain = request.host_url
                 redirect_uri = (
-                    app_domain.replace("http://", "https://")
-                    + "auth/pipedrive/callback"
+                        app_domain.replace("http://", "https://")
+                        + "auth/pipedrive/callback"
                 )
 
                 res = await response.json()
-                pipedrive_client_id = res['pipedrive_client_id']  # get from database or sent it in response
+                pipedrive_client_id = res[
+                    "pipedrive_client_id"
+                ]  # get from database or sent it in response
 
                 auth_url = (
                     f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
@@ -47,7 +93,6 @@ async def pipedrive_login():
 
 @auth.route("/pipedrive/callback")
 async def pipedrive_authorized():
-    print("got a callback")
     authorization_code = request.args.get("code")
     if not authorization_code:
         return "No authorization code received"

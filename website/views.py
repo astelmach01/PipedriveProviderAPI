@@ -2,8 +2,9 @@
 Routes
 """
 import logging
+
 import aiohttp
-from quart import Blueprint, request, render_template, redirect
+from quart import Blueprint, request, render_template
 
 from website.api.channels.util import create_channel
 from website.settings import settings
@@ -35,13 +36,15 @@ async def send_code():
         logging.info("Sending post request")
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(api_url + "/create", json=payload) as response:
+            async with session.post(api_url + "/send_code_1", json=payload) as response:
                 res = await response.json()
                 logging.info(res)
-                if response.status == 200:
+                if res['success']:
+                    phone_code_hash = res['phone_code_hash']
                     return await render_template(
-                        "auth.html",
+                        "auth1.html",
                         phone_number=phone_number,
+                        phone_code_hash=phone_code_hash
                     )
 
                 else:
