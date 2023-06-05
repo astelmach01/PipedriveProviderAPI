@@ -29,23 +29,23 @@ async def auth1():
         # create the first session string
         async with session.post(api_url + "create_string_1", json=payload) as response:
             res = await response.json()
-            if res['success']:
-                payload = {
-                    "phone_number": phone_number
-                }
+            if res["success"]:
+                payload = {"phone_number": phone_number}
                 # create the second_session_string
-                async with session.post(api_url + "send_code_2", json=payload) as response:
+                async with session.post(
+                    api_url + "send_code_2", json=payload
+                ) as response:
                     res = await response.json()
-                    if res['success']:
-                        phone_code_hash = res['phone_code_hash']
+                    if res["success"]:
+                        phone_code_hash = res["phone_code_hash"]
                         return await render_template(
                             "auth2.html",
                             phone_number=phone_number,
-                            phone_code_hash=phone_code_hash
+                            phone_code_hash=phone_code_hash,
                         )
 
 
-@auth.route('/auth2', methods=["POST"])
+@auth.route("/auth2", methods=["POST"])
 async def auth2():
     form = await request.form
     phone_number = form.get("phone_number")
@@ -65,25 +65,23 @@ async def auth2():
         # create the first session string
         async with session.post(api_url + "create_string_2", json=payload) as response:
             res = await response.json()
-            if res['success']:
-                pipedrive_client_id = res['pipedrive_client_id']
+            if res["success"]:
+                pipedrive_client_id = res["pipedrive_client_id"]
 
                 app_domain = request.host_url
                 redirect_uri = (
-                        app_domain.replace("http://", "https://")
-                        + "auth/pipedrive/callback"
+                    app_domain.replace("http://", "https://")
+                    + "auth/pipedrive/callback"
                 )
-
-                res = await response.json()
-                pipedrive_client_id = res[
-                    "pipedrive_client_id"
-                ]  # get from database or sent it in response
 
                 auth_url = (
                     f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
                     f"=random_string&redirect_uri={redirect_uri}"
                 )
                 return redirect(auth_url)
+
+            else:
+                return "Failed to authorize second time"
 
 
 @auth.route("/pipedrive")

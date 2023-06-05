@@ -1,6 +1,7 @@
 """
 Routes
 """
+import json
 import logging
 
 import aiohttp
@@ -33,18 +34,24 @@ async def send_code():
 
         api_url = settings.TELEGRAM_API_URL
 
-        logging.info("Sending post request")
+        logging.info("Sending sync")
+
+        # for session stickiness
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url + "sync", json=payload) as response:
+                res = await response.json()
+                logging.info(res)
 
         async with aiohttp.ClientSession() as session:
             async with session.post(api_url + "send_code_1", json=payload) as response:
                 res = await response.json()
                 logging.info(res)
-                if res['success']:
-                    phone_code_hash = res['phone_code_hash']
+                if res["success"]:
+                    phone_code_hash = res["phone_code_hash"]
                     return await render_template(
                         "auth1.html",
                         phone_number=phone_number,
-                        phone_code_hash=phone_code_hash
+                        phone_code_hash=phone_code_hash,
                     )
 
                 else:
