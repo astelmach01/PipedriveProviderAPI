@@ -5,7 +5,7 @@ import json
 import logging
 
 import aiohttp
-from quart import Blueprint, request, render_template
+from quart import Blueprint, request, render_template, session
 
 from website.api.channels.util import create_channel
 from website.settings import settings
@@ -63,12 +63,14 @@ async def send_code():
 
 
 @views.route("/create_channel", methods=["GET", "POST"])
-async def _create_channel(access_token: str):
+async def _create_channel():
     if request.method == "POST":
         form = await request.form
         channel_id = form.get("channel_id")
         provider_type = form.get("provider_type", "other")
         channel_name = form.get("channel_name")
+
+        access_token = session['access_token']
 
         success = await create_channel(
             access_token, channel_id, channel_name, provider_type

@@ -2,7 +2,7 @@ import os
 
 import aiohttp
 import requests
-from quart import Blueprint, redirect, request, render_template
+from quart import Blueprint, redirect, request, render_template, session
 
 from website.settings import settings
 
@@ -125,7 +125,6 @@ async def pipedrive_authorized():
 
     response_json = response.json()
 
-    global access_token
     access_token = response_json["access_token"]
     refresh_token = response_json["refresh_token"]
 
@@ -134,6 +133,8 @@ async def pipedrive_authorized():
     parsed_url = urlparse(response_json["api_domain"])
     domain_parts = parsed_url.netloc.split(".")
     company_domain = domain_parts[0]
+
+    session['access_token'] = access_token
 
     print("access_token", access_token)
 
