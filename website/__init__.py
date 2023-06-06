@@ -16,7 +16,7 @@ logging.basicConfig(
 
 def create_app():
     app = Quart(__name__)
-    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
+    app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY")
 
     from .views import views
     from .auth import auth
