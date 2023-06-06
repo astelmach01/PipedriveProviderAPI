@@ -137,4 +137,4 @@ async def pipedrive_authorized():
 
     print("access_token", access_token)
 
-    return redirect("/landing")
+    return redirect("/create_channel")
