@@ -112,7 +112,7 @@ async def pipedrive_authorized():
     body = {
         "grant_type": "authorization_code",
         "code": authorization_code,
-        "redirect_uri": "https://telegram-crm-plugin.herokuapp.com/auth/pipedrive/callback",
+        "redirect_uri": "https://pipedrive-provider-api.herokuapp.com/auth/pipedrive/callback",
     }
 
     # Send the POST request to the URL
