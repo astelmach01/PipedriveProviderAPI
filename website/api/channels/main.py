@@ -5,7 +5,6 @@ import aiohttp
 from quart import Blueprint, request, render_template
 
 from website.util import send_message_to_Telegram
-from website.core import channel_ids, access_tokens
 
 channels = Blueprint("channels", __name__)
 
@@ -52,6 +51,7 @@ async def receive_message():
     sender_id = data['sender_id']
     conversation_id = data['conversation_id']
 
+    # database call here
     access_token = access_tokens[receiving_phone_number]
     channel_id = channel_ids[receiving_phone_number]
 
