@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 2. Go to the [Pipedrive Developer Hub](https://app.pipedrive.com/auth/login?return_url=https%3A%2F%2Fapp.pipedrive.com%2Fdeveloper-hub), create an app, name it whatever, and paste the following callback URL.
 
-    https://telegram-crm-plugin.herokuapp.com/auth/pipedrive/callback
+    https://pipedrive-provider-api.herokuapp.com/auth/pipedrive/callback
 
 3. Hit Save, go to the Oauth and access scopes tab, enable messaging integration, and upload the ```manifest.json``` file. 
 
@@ -32,7 +32,7 @@ pip install -r requirements.txt
 ## How to use
 
 1) Click this: 
-https://telegram-crm-plugin.herokuapp.com/
+https://pipedrive-provider-api.herokuapp.com/
 
 2) Enter your phone number associated with your telegram account, it should include the country code, so "+1" for the US.
 
@@ -46,8 +46,6 @@ https://telegram-crm-plugin.herokuapp.com/
 
 7) All done, send a message from Telegram to anybody (could be yourself), and refresh the pipedrive page.
 
-- Currently only one person can use it at a time, to allow another person to use it, visit this link: 
-https://telegram-crm-plugin.herokuapp.com/logout
 
 
 

@@ -1,8 +1,11 @@
+import logging
 from datetime import datetime, timezone
 
+import aiohttp
 from quart import Blueprint, request, render_template
 
 from website.util import send_message_to_Telegram
+from website.core import channel_ids, access_tokens
 
 channels = Blueprint("channels", __name__)
 
@@ -36,6 +39,26 @@ async def messages(providerChannelId):
 
     else:
         return {"success": False, "data": {"id": message_id}}
+
+
+# from telegram to pipedrive
+@channels.route("/messages/receive", methods=["POST"])
+async def receive_message():
+    data = await request.get_json()
+
+    msg = data['msg']
+    receiving_phone_number = data['receiving_phone_number']
+    time = data['time']
+    sender_id = data['sender_id']
+    conversation_id = data['conversation_id']
+
+    access_token = access_tokens[receiving_phone_number]
+    channel_id = channel_ids[receiving_phone_number]
+
+    response = await send_message_to_PD(access_token, sender_id, channel_id, msg, time, conversation_id)
+    logging.info(response)
+
+    return response
 
 
 # Get conversation by ID
@@ -110,3 +133,37 @@ async def conversations(providerChannelId):
     }
 
     return fake_response
+
+
+async def send_message_to_PD(access_token: str, sender_id: str, channel_id: str, msg: str, time, conversation_id: str):
+    print("Sending message from Telegram to Pipedrive")
+
+    created_at = time.strftime("%Y-%m-%d %H:%M")
+
+    request_options = {
+        "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
+        "method": "POST",
+        "headers": {
+            "Authorization": f"Bearer {access_token}",
+        },
+        "body": {
+            "id": f"msg-te-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
+            "channel_id": channel_id,
+            "sender_id": sender_id,
+            "conversation_id": conversation_id,
+            "message": msg,
+            "status": "sent",
+            "created_at": created_at,
+            "attachments": [],
+        },
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                request_options["uri"],
+                headers=request_options["headers"],
+                json=request_options["body"],
+        ) as response:
+            res = await response.json()
+            logging.info(res)
+            return res

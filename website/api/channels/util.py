@@ -27,8 +27,6 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
             logging.info(res)
 
             if status == "4" or status == "5":
-                print("Error creating channel")
                 return False
             else:
-                print("Channel created successfully")
                 return True
