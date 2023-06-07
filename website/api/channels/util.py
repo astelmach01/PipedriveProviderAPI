@@ -8,6 +8,7 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
         "method": "POST",
         "headers": {
             "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
         "json": {
             "name": name,
