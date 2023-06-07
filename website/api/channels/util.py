@@ -22,8 +22,9 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
             headers=request_options["headers"],
             json=request_options["json"],
         ) as response:
+            res = await response.json()
             status = str(response.status)[0]
-            logging.info(response)
+            logging.info(res)
 
             if status == "4" or status == "5":
                 print("Error creating channel")
