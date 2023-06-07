@@ -21,7 +21,7 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
         async with session.post(
             request_options["url"],
             headers=request_options["headers"],
-            json=request_options["json"],
+            data=request_options["json"],
         ) as response:
             status = str(response.status)[0]
             print(response)
