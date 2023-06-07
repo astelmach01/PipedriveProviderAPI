@@ -8,7 +8,6 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
         "method": "POST",
         "headers": {
             "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
         },
         "json": {
             "name": name,
@@ -21,13 +20,12 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
         async with session.post(
             request_options["url"],
             headers=request_options["headers"],
-            data=request_options["json"],
+            json=request_options["json"],
         ) as response:
             status = str(response.status)[0]
-            print(response)
+            logging.info(response)
 
             if status == "4" or status == "5":
-                logging.info(response)
                 print("Error creating channel")
                 return False
             else:
