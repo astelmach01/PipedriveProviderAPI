@@ -40,6 +40,7 @@ def get_access_key(phone_number: str):
 
 
 def delete_item(phone_number: str):
+    logging.info(f"Deleting item for phone number {phone_number}")
     response = client.delete_item(
         TableName=settings.TABLE_NAME, Key={"phone-number": {"S": phone_number}}
     )

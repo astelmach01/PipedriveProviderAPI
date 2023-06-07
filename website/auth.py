@@ -92,12 +92,11 @@ async def pipedrive_authorized():
         return "No authorization code received"
 
     session = quart.session
-    url = "https://oauth.pipedrive.com/oauth/token"
     client_id = session["pipedrive_client_id"]
     client_secret = session["pipedrive_client_secret"]
 
     response_json = await exchange_auth_code(
-        authorization_code, url, client_id, client_secret
+        authorization_code, client_id, client_secret
     )
 
     if "access_token" not in response_json:
@@ -140,10 +139,11 @@ def create_authorization(client_id: str, client_secret: str):
 
 # step 4 of https://pipedrive.readme.io/docs/marketplace-oauth-authorization
 async def exchange_auth_code(
-    authorization_code: str, url: str, client_id: str, client_secret: str
+    authorization_code: str, client_id: str, client_secret: str
 ) -> dict:
     client_creds_b64 = create_authorization(client_id, client_secret)
 
+    url = "https://oauth.pipedrive.com/oauth/token"
     header = {
         "Authorization": f"Basic {client_creds_b64}",
     }
