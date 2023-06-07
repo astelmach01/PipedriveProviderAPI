@@ -116,7 +116,7 @@ async def pipedrive_authorized():
     session["access_token"] = access_token
     session["refresh_token"] = refresh_token
 
-    print("access_token", access_token)
+    logging.info("Set access token for user " + str(session['phone_number']))
 
     return redirect("/create_channel")
 
