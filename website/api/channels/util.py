@@ -1,7 +1,8 @@
 import aiohttp
+import logging
 
 
-async def create_channel(access_token, id, name, provider_type="other"):
+async def create_channel_PD(access_token, channel_id, name, provider_type="other"):
     request_options = {
         "url": "https://api.pipedrive.com/v1/channels",
         "method": "POST",
@@ -10,7 +11,7 @@ async def create_channel(access_token, id, name, provider_type="other"):
         },
         "json": {
             "name": name,
-            "provider_channel_id": id,
+            "provider_channel_id": channel_id,
             "provider_type": provider_type,
         },
     }
@@ -22,8 +23,10 @@ async def create_channel(access_token, id, name, provider_type="other"):
             json=request_options["json"],
         ) as response:
             status = str(response.status)[0]
+            print(response)
 
             if status == "4" or status == "5":
+                logging.info(response)
                 print("Error creating channel")
                 return False
             else:

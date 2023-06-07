@@ -1,12 +1,19 @@
-import os
+import logging
+import base64
+from urllib.parse import urlencode
 
 import aiohttp
-import requests
-from quart import Blueprint, redirect, request, render_template, session
+import quart
+from quart import Blueprint, redirect, request, render_template
 
 from website.settings import settings
+from website.util import create_redirect_url
+
+api_url = settings.TELEGRAM_API_URL
 
 auth = Blueprint("auth", __name__)
+
+
 
 
 @auth.route("/auth1", methods=["POST"])
@@ -21,8 +28,6 @@ async def auth1():
         "phone_code_hash": phone_code_hash,
         "auth_code": auth_code,
     }
-
-    api_url = settings.TELEGRAM_API_URL
 
     # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
@@ -58,28 +63,16 @@ async def auth2():
         "auth_code": auth_code,
     }
 
-    api_url = settings.TELEGRAM_API_URL
-
     # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
         # create the first session string
         async with session.post(api_url + "create_string_2", json=payload) as response:
             res = await response.json()
             if res["success"]:
+                session = quart.session
+                session["Logged In"] = True
 
-                app_domain = request.host_url
-                redirect_uri = (
-                    app_domain.replace("http://", "https://")
-                    + "auth/pipedrive/callback"
-                )
-
-                pipedrive_client_id = res["pipedrive_client_id"]
-
-                auth_url = (
-                    f"https://oauth.pipedrive.com/oauth/authorize?client_id={pipedrive_client_id}&state"
-                    f"=random_string&redirect_uri={redirect_uri}"
-                )
-                return redirect(auth_url)
+                return redirect(create_redirect_url(session))
 
             else:
                 return "Failed to authorize second time"
@@ -93,15 +86,47 @@ async def pipedrive_login():
 @auth.route("/pipedrive/callback")
 async def pipedrive_authorized():
     authorization_code = request.args.get("code")
+
     if not authorization_code:
         return "No authorization code received"
 
+    session = quart.session
     url = "https://oauth.pipedrive.com/oauth/token"
-    client_id = os.getenv("PIPEDRIVE_CLIENT_ID")
-    client_secret = os.getenv("PIPEDRIVE_CLIENT_SECRET")
+    client_id = session["pipedrive_client_id"]
+    client_secret = session["pipedrive_client_secret"]
 
-    import base64
+    response_json = await exchange_auth_code(
+        authorization_code, url, client_id, client_secret
+    )
 
+    if "access_token" not in response_json:
+        logging.info(response_json)
+        return "Failed to get access token"
+
+    access_token = response_json["access_token"]
+    refresh_token = response_json["refresh_token"]
+    expires_in = response_json[
+        "expires_in"
+    ]  # the maximum time in seconds until the access_token expires
+
+    from urllib.parse import urlparse
+
+    parsed_url = urlparse(response_json["api_domain"])
+    domain_parts = parsed_url.netloc.split(".")
+    company_domain = domain_parts[0]
+
+    session["access_token"] = access_token
+    session["refresh_token"] = refresh_token
+
+    print("access_token", access_token)
+
+    return redirect("/create_channel")
+
+
+# step 4 of https://pipedrive.readme.io/docs/marketplace-oauth-authorization
+async def exchange_auth_code(
+    authorization_code: str, url: str, client_id: str, client_secret: str
+) -> dict:
     client_creds = f"{client_id}:{client_secret}"
     client_creds_b64 = base64.b64encode(client_creds.encode()).decode()
 
@@ -112,30 +137,16 @@ async def pipedrive_authorized():
     body = {
         "grant_type": "authorization_code",
         "code": authorization_code,
-        "redirect_uri": "https://pipedrive-provider-api.herokuapp.com/auth/pipedrive/callback",
+        "redirect_uri": settings.PIPEDRIVE_CALLBACK_URI,
     }
 
-    # Send the POST request to the URL
-    response = requests.post(url, headers=header, data=body)
-    if str(response.status_code)[0] == "4":
-        print(response.json())
+    encoded_body = urlencode(body)
 
-    else:
-        print("Successfully posted authorization code")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=header, data=encoded_body) as response:
+            response_data = await response.json()
 
-    response_json = response.json()
+    return response_data
 
-    access_token = response_json["access_token"]
-    refresh_token = response_json["refresh_token"]
 
-    from urllib.parse import urlparse
 
-    parsed_url = urlparse(response_json["api_domain"])
-    domain_parts = parsed_url.netloc.split(".")
-    company_domain = domain_parts[0]
-
-    session['access_token'] = access_token
-
-    print("access_token", access_token)
-
-    return redirect("/create_channel")

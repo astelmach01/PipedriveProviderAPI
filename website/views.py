@@ -1,14 +1,15 @@
 """
 Routes
 """
-import json
 import logging
 
 import aiohttp
-from quart import Blueprint, request, render_template, session
+import quart
+from quart import Blueprint, redirect, request, render_template
 
-from website.api.channels.util import create_channel
+from website.api.channels.util import create_channel_PD
 from website.settings import settings
+from website.util import create_redirect_url
 
 views = Blueprint("views", __name__)
 
@@ -31,6 +32,15 @@ async def send_code():
             "pipedrive_client_id": pipedrive_client_id,
             "pipedrive_client_secret": pipedrive_client_secret,
         }
+
+        session = quart.session
+
+        session["phone_number"] = phone_number
+        session["pipedrive_client_id"] = pipedrive_client_id
+        session["pipedrive_client_secret"] = pipedrive_client_secret
+
+        if "Logged In" in session and session["Logged In"]:
+            return redirect(create_redirect_url(session))
 
         api_url = settings.TELEGRAM_API_URL
 
@@ -63,16 +73,17 @@ async def send_code():
 
 
 @views.route("/create_channel", methods=["GET", "POST"])
-async def _create_channel():
+async def create_channel():
     if request.method == "POST":
         form = await request.form
         channel_id = form.get("channel_id")
         provider_type = form.get("provider_type", "other")
         channel_name = form.get("channel_name")
 
-        access_token = session['access_token']
+        session = quart.session
+        access_token = session["access_token"]
 
-        success = await create_channel(
+        success = await create_channel_PD(
             access_token, channel_id, channel_name, provider_type
         )
 
