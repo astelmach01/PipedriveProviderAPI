@@ -22,19 +22,14 @@ def put_item(phone_number: str, **kwargs):
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-# convenience function
-def put_access_key(phone_number: str, access_key: str):
-    return put_item(phone_number, access_key=access_key)
-
-
-def get_access_key(phone_number: str):
-    logging.info(f"Getting access key for phone number {phone_number}")
+def get_attribute(phone_number: str, attribute: str):
+    logging.info(f"Getting attribute '{attribute}' for phone number '{phone_number}'")
     response = client.get_item(
         TableName=settings.TABLE_NAME, Key={"phone-number": {"S": phone_number}}
     )
     item = response.get("Item")
     if item is not None:
-        return item.get("access-key", {}).get("S")
+        return item.get(attribute, {}).get("S")
     else:
         return None
 
@@ -45,3 +40,12 @@ def delete_item(phone_number: str):
         TableName=settings.TABLE_NAME, Key={"phone-number": {"S": phone_number}}
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+
+# convenience function
+def put_access_key(phone_number: str, access_key: str):
+    return put_item(phone_number, access_key=access_key)
+
+
+def get_access_key(phone_number: str):
+    return get_attribute(phone_number, "access_key")

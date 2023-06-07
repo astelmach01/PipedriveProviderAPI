@@ -2,15 +2,15 @@
 Routes
 """
 import logging
-
 import aiohttp
+
 import quart
 from quart import Blueprint, redirect, request, render_template
 
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
 from website.util import create_redirect_url
-from website.connection import put_access_key
+from website.connection import put_item
 
 views = Blueprint("views", __name__)
 
@@ -83,12 +83,13 @@ async def create_channel():
 
         session = quart.session
         access_token = session["access_token"]
-
+        
         success = await create_channel_PD(
             access_token, channel_id, channel_name, provider_type
         )
 
         if success:
+            put_item(session["phone_number"], channel_id=channel_id)
             return await render_template("success.html")
         else:
             return await render_template("error.html")

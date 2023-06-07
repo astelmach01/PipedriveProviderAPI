@@ -2,7 +2,8 @@ import logging
 from datetime import datetime, timezone
 
 import aiohttp
-from quart import Blueprint, request, render_template
+from quart import Blueprint, request
+from website.connection import get_access_key, get_attribute
 
 from website.util import send_message_to_Telegram
 
@@ -20,8 +21,6 @@ async def sender(providerChannelId, senderId):
 @channels.route("/<providerChannelId>/messages", methods=["POST"])
 async def messages(providerChannelId):
     print("Incoming message from pipedrive")
-
-    # post to telegram API
 
     # Get the multipart form data
     data = await request.form
@@ -52,8 +51,8 @@ async def receive_message():
     conversation_id = data["conversation_id"]
 
     # database call here
-    access_token = access_tokens[receiving_phone_number]
-    channel_id = channel_ids[receiving_phone_number]
+    access_token = get_access_key(receiving_phone_number)
+    channel_id = get_attribute(receiving_phone_number, "channel_id")
 
     response = await send_message_to_PD(
         access_token, sender_id, channel_id, msg, time, conversation_id
@@ -151,7 +150,6 @@ async def send_message_to_PD(
 
     request_options = {
         "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
-        "method": "POST",
         "headers": {
             "Authorization": f"Bearer {access_token}",
         },
