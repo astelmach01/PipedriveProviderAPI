@@ -144,7 +144,7 @@ async def send_message_to_PD(
     time,
     conversation_id: str,
 ):
-    print("Sending message from Telegram to Pipedrive")
+    logging.info("Sending message from Telegram to Pipedrive")
 
     created_at = time.strftime("%Y-%m-%d %H:%M")
 
