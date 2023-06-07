@@ -14,8 +14,6 @@ api_url = settings.TELEGRAM_API_URL
 auth = Blueprint("auth", __name__)
 
 
-
-
 @auth.route("/auth1", methods=["POST"])
 async def auth1():
     form = await request.form
@@ -38,7 +36,7 @@ async def auth1():
                 payload = {"phone_number": phone_number}
                 # create the second_session_string
                 async with session.post(
-                    api_url + "send_code_2", json=payload
+                        api_url + "send_code_2", json=payload
                 ) as response:
                     res = await response.json()
                     if res["success"]:
@@ -125,7 +123,7 @@ async def pipedrive_authorized():
 
 # step 4 of https://pipedrive.readme.io/docs/marketplace-oauth-authorization
 async def exchange_auth_code(
-    authorization_code: str, url: str, client_id: str, client_secret: str
+        authorization_code: str, url: str, client_id: str, client_secret: str
 ) -> dict:
     client_creds = f"{client_id}:{client_secret}"
     client_creds_b64 = base64.b64encode(client_creds.encode()).decode()
@@ -140,13 +138,8 @@ async def exchange_auth_code(
         "redirect_uri": settings.PIPEDRIVE_CALLBACK_URI,
     }
 
-    encoded_body = urlencode(body)
-
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=header, data=encoded_body) as response:
+        async with session.post(url, headers=header, data=body) as response:
             response_data = await response.json()
 
     return response_data
-
-
-
