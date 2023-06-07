@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
 import logging
 import base64
-from urllib.parse import urlencode
+from urllib.parse import urlparse
+
 
 import aiohttp
 import quart
@@ -8,6 +10,7 @@ from quart import Blueprint, redirect, request, render_template
 
 from website.settings import settings
 from website.util import create_redirect_url
+from website.connection import put_item
 
 api_url = settings.TELEGRAM_API_URL
 
@@ -36,7 +39,7 @@ async def auth1():
                 payload = {"phone_number": phone_number}
                 # create the second_session_string
                 async with session.post(
-                        api_url + "send_code_2", json=payload
+                    api_url + "send_code_2", json=payload
                 ) as response:
                     res = await response.json()
                     if res["success"]:
@@ -107,7 +110,7 @@ async def pipedrive_authorized():
         "expires_in"
     ]  # the maximum time in seconds until the access_token expires
 
-    from urllib.parse import urlparse
+    date_expires = datetime.now() + timedelta(seconds=expires_in)
 
     parsed_url = urlparse(response_json["api_domain"])
     domain_parts = parsed_url.netloc.split(".")
@@ -116,17 +119,30 @@ async def pipedrive_authorized():
     session["access_token"] = access_token
     session["refresh_token"] = refresh_token
 
-    logging.info("Set access token for user " + str(session['phone_number']))
+    put_item(
+        session["phone_number"],
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_at=date_expires.strftime("%Y-%m-%d %H:%M:%S"),
+    )
+
+    logging.info("Set access token for user " + str(session["phone_number"]))
 
     return redirect("/create_channel")
 
 
-# step 4 of https://pipedrive.readme.io/docs/marketplace-oauth-authorization
-async def exchange_auth_code(
-        authorization_code: str, url: str, client_id: str, client_secret: str
-) -> dict:
+def create_authorization(client_id: str, client_secret: str):
     client_creds = f"{client_id}:{client_secret}"
     client_creds_b64 = base64.b64encode(client_creds.encode()).decode()
+
+    return client_creds_b64
+
+
+# step 4 of https://pipedrive.readme.io/docs/marketplace-oauth-authorization
+async def exchange_auth_code(
+    authorization_code: str, url: str, client_id: str, client_secret: str
+) -> dict:
+    client_creds_b64 = create_authorization(client_id, client_secret)
 
     header = {
         "Authorization": f"Basic {client_creds_b64}",
@@ -143,3 +159,38 @@ async def exchange_auth_code(
             response_data = await response.json()
 
     return response_data
+
+
+async def refresh_token(
+    phone_number: str, client_id: str, client_secret: str, refresh_token: str
+) -> str:
+    url = "https://oauth.pipedrive.com/oauth/token"
+    client_creds_b64 = create_authorization(client_id, client_secret)
+
+    header = {
+        "Authorization": f"Basic {client_creds_b64}",
+    }
+
+    body = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=header, data=body) as response:
+            response_data = await response.json()
+
+    access_token = response_data["access_token"]
+    refresh_token = response_data["refresh_token"]
+    expires_in = response_data["expires_in"]
+
+    date_expires = datetime.now() + timedelta(seconds=expires_in)
+
+    put_item(
+        phone_number,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_at=date_expires.strftime("%Y-%m-%d %H:%M:%S"),
+    )
+
+    return access_token

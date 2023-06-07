@@ -13,7 +13,7 @@ async def send_message_to_Telegram(recipient, msg):
 
 
 async def send_message_to_PD(
-        access_token: str, sender_id: str, channel_id: str, msg: str, time
+    access_token: str, sender_id: str, channel_id: str, msg: str, time
 ):
     print("Sending message from Telegram to Pipedrive")
 
@@ -39,9 +39,9 @@ async def send_message_to_PD(
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
-                request_options["uri"],
-                headers=request_options["headers"],
-                json=request_options["body"],
+            request_options["uri"],
+            headers=request_options["headers"],
+            json=request_options["body"],
         ) as response:
             status = str(response.status)[0]
 

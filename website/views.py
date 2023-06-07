@@ -8,9 +8,9 @@ import quart
 from quart import Blueprint, redirect, request, render_template
 
 from website.api.channels.util import create_channel_PD
-from website.core import access_tokens, channel_ids
 from website.settings import settings
 from website.util import create_redirect_url
+from website.connection import put_access_key
 
 views = Blueprint("views", __name__)
 
@@ -83,9 +83,6 @@ async def create_channel():
 
         session = quart.session
         access_token = session["access_token"]
-
-        access_tokens[session['phone_number']] = access_token
-        channel_ids[session['phone_number']] = channel_id
 
         success = await create_channel_PD(
             access_token, channel_id, channel_name, provider_type

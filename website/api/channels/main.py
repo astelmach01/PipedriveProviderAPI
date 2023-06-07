@@ -45,17 +45,19 @@ async def messages(providerChannelId):
 async def receive_message():
     data = await request.get_json()
 
-    msg = data['msg']
-    receiving_phone_number = data['receiving_phone_number']
-    time = data['time']
-    sender_id = data['sender_id']
-    conversation_id = data['conversation_id']
+    msg = data["msg"]
+    receiving_phone_number = data["receiving_phone_number"]
+    time = data["time"]
+    sender_id = data["sender_id"]
+    conversation_id = data["conversation_id"]
 
     # database call here
     access_token = access_tokens[receiving_phone_number]
     channel_id = channel_ids[receiving_phone_number]
 
-    response = await send_message_to_PD(access_token, sender_id, channel_id, msg, time, conversation_id)
+    response = await send_message_to_PD(
+        access_token, sender_id, channel_id, msg, time, conversation_id
+    )
     logging.info(response)
 
     return response
@@ -135,7 +137,14 @@ async def conversations(providerChannelId):
     return fake_response
 
 
-async def send_message_to_PD(access_token: str, sender_id: str, channel_id: str, msg: str, time, conversation_id: str):
+async def send_message_to_PD(
+    access_token: str,
+    sender_id: str,
+    channel_id: str,
+    msg: str,
+    time,
+    conversation_id: str,
+):
     print("Sending message from Telegram to Pipedrive")
 
     created_at = time.strftime("%Y-%m-%d %H:%M")
@@ -160,9 +169,9 @@ async def send_message_to_PD(access_token: str, sender_id: str, channel_id: str,
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
-                request_options["uri"],
-                headers=request_options["headers"],
-                json=request_options["body"],
+            request_options["uri"],
+            headers=request_options["headers"],
+            json=request_options["body"],
         ) as response:
             res = await response.json()
             logging.info(res)

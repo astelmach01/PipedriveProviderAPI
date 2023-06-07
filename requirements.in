@@ -4,7 +4,7 @@ quart
 aiohttp
 hypercorn
 
-telethon
+boto3
 cryptg
 requests
 python-dotenv

@@ -26,4 +26,6 @@ def create_app():
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(channels, url_prefix="/api/channels")
 
+    import website.connection
+
     return app
