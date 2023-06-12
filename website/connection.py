@@ -10,37 +10,19 @@ client = boto3.client(
 )
 
 
-def get_update_params(body):
-    """Given a dictionary we generate an update expression and a dict of values
-    to update a dynamodb table.
-
-    Params:
-        body (dict): Parameters to use for formatting.
-
-    Returns:
-        update expression, dict of values.
-    """
-    update_expression = ["set "]
-    update_values = dict()
-
-    for key, val in body.items():
-        update_expression.append(f" {key} = :{key},")
-        update_values[f":{key}"] = val
-
-    return "".join(update_expression)[:-1], update_values
-
-
 def put_item(phone_number: str, **kwargs):
-    a, v = get_update_params(kwargs)
-    logging.info(
-        f"Putting item for phone number {phone_number} with values {v} and expression {a}"
-    )
+    item = dict()
+
+    for key, value in kwargs.items():
+        item[key] = {"Value": {"S": str(value)}, "Action": "PUT"}
+
+    logging.info(f"Updating item {item} with values {kwargs}")
     response = client.update_item(
-        Key={"phone-number": phone_number},
-        UpdateExpression=a,
-        ExpressionAttributeValues=dict(v),
+        TableName=settings.TABLE_NAME,
+        Key={"phone-number": {"S": phone_number}},
+        AttributeUpdates=item
     )
-    return response
+    return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
 def get_attribute(phone_number: str, attribute: str):
@@ -70,7 +52,3 @@ def put_access_key(phone_number: str, access_key: str):
 
 def get_access_key(phone_number: str):
     return get_attribute(phone_number, "access_key")
-
-
-if __name__ == "__main__":
-    put_item("1234567890", access_key="1234")
