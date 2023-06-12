@@ -172,7 +172,6 @@ async def send_message_to_PD(
             headers=request_options["headers"],
             json=request_options["body"],
         ) as response:
-            logging.info("Got here")
             res = await response.json()
             logging.info(res)
             return res

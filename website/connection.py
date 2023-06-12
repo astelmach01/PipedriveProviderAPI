@@ -15,10 +15,14 @@ def put_item(phone_number: str, **kwargs):
 
     # Add the kwargs to the item dictionary
     for key, value in kwargs.items():
-        item[key] = {"S": str(value)}
+        item[key] = {"Value": {"S": str(value)}, "Action": "PUT"}
 
-    logging.info(f"Putting item {item} into table {settings.TABLE_NAME}")
-    response = client.put_item(TableName=settings.TABLE_NAME, Item=item)
+    logging.info(f"Updating item {item}")
+    response = client.update_item(
+        TableName=settings.TABLE_NAME,
+        Key={"phone-number": {"S": phone_number}},
+        AttributeUpdates=item
+    )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
