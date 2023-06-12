@@ -141,12 +141,12 @@ async def send_message_to_PD(
     sender_id: str,
     channel_id: str,
     msg: str,
-    time,
+    time: str,
     conversation_id: str,
 ):
     logging.info("Sending message from Telegram to Pipedrive")
 
-    created_at = time.strftime("%Y-%m-%d %H:%M")
+    created_at = time
 
     request_options = {
         "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
