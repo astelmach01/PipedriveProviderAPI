@@ -9,6 +9,7 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
+
 def get_update_params(body):
     """Given a dictionary we generate an update expression and a dict of values
     to update a dynamodb table.
@@ -28,14 +29,17 @@ def get_update_params(body):
 
     return "".join(update_expression)[:-1], update_values
 
+
 def put_item(phone_number: str, **kwargs):
     a, v = get_update_params(kwargs)
-    logging.info(f"Putting item for phone number {phone_number} with values {v} and expression {a}")
+    logging.info(
+        f"Putting item for phone number {phone_number} with values {v} and expression {a}"
+    )
     response = client.update_item(
-        Key={'phone-number': phone_number},
+        Key={"phone-number": phone_number},
         UpdateExpression=a,
-        ExpressionAttributeValues=dict(v)
-        )
+        ExpressionAttributeValues=dict(v),
+    )
     return response
 
 
@@ -66,3 +70,7 @@ def put_access_key(phone_number: str, access_key: str):
 
 def get_access_key(phone_number: str):
     return get_attribute(phone_number, "access_key")
+
+
+if __name__ == "__main__":
+    put_item("1234567890", access_key="1234")
