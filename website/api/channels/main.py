@@ -145,6 +145,7 @@ async def send_message_to_PD(
     conversation_id: str,
 ):
     logging.info("Sending message from Telegram to Pipedrive")
+    
 
     created_at = time
 
@@ -164,13 +165,14 @@ async def send_message_to_PD(
             "attachments": [],
         },
     }
-
+    
     async with aiohttp.ClientSession() as session:
         async with session.post(
             request_options["uri"],
             headers=request_options["headers"],
             json=request_options["body"],
         ) as response:
+            logging.info("Got here")
             res = await response.json()
             logging.info(res)
             return res
