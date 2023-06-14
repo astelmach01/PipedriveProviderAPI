@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import aiohttp
 from quart import Blueprint, request
-from website.connection import get_access_key, get_attribute
+from website.connection import get_access_token, get_attribute
 
 from website.util import send_message_to_PD, send_message_to_Telegram
 
@@ -51,7 +51,7 @@ async def receive_message():
     conversation_id = data["conversation_id"]
 
     # database call here
-    access_token = get_access_key(receiving_phone_number)
+    access_token = get_access_token(receiving_phone_number)
     channel_id = get_attribute(receiving_phone_number, "channel_id")
 
     response = await send_message_to_PD(

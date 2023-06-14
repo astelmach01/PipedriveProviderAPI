@@ -20,7 +20,7 @@ def put_item(phone_number: str, **kwargs):
     response = client.update_item(
         TableName=settings.TABLE_NAME,
         Key={"phone-number": {"S": phone_number}},
-        AttributeUpdates=item
+        AttributeUpdates=item,
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
@@ -50,5 +50,5 @@ def put_access_key(phone_number: str, access_key: str):
     return put_item(phone_number, access_key=access_key)
 
 
-def get_access_key(phone_number: str):
-    return get_attribute(phone_number, "access_key")
+def get_access_token(phone_number: str):
+    return get_attribute(phone_number, "access_token")
