@@ -1,6 +1,7 @@
 import logging
 import boto3
 import aiohttp
+import asyncio
 from website.settings import settings
 
 client = boto3.client(
@@ -10,7 +11,7 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
-session = aiohttp.ClientSession()
+session = aiohttp.ClientSession(loop=asyncio.get_event_loop())
 
 
 # ========== AWS DYNAMODB ==========
@@ -75,4 +76,5 @@ async def get(url: str, **kwargs) -> aiohttp.ClientResponse:
     async with session:
         async with session.get(url, **kwargs) as response:
             return response
+        
 # ========== END AIOHTTP REQUESTS ==========
