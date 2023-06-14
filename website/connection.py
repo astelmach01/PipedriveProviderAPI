@@ -67,10 +67,12 @@ def get_access_token(phone_number: str):
 
 
 async def post(url: str, **kwargs) -> aiohttp.ClientResponse:
-    async with session.post(url, **kwargs) as response:
-        return response
+    async with session:
+        async with session.post(url, **kwargs) as response:
+            return response
 
 async def get(url: str, **kwargs) -> aiohttp.ClientResponse:
-    async with session.get(url, **kwargs) as response:
-        return response
+    async with session:
+        async with session.get(url, **kwargs) as response:
+            return response
 # ========== END AIOHTTP REQUESTS ==========
