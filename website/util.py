@@ -15,7 +15,7 @@ async def send_message_to_Telegram(recipient, msg):
 
 
 async def send_message_to_PD(
-    access_token: str, sender_id: str, channel_id: str, msg: str, time
+    access_token: str, sender_id: str, channel_id: str, conversation_id: str, msg: str, time
 ):
     logging.info(f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}")
 
@@ -31,7 +31,7 @@ async def send_message_to_PD(
             "id": f"msg-te-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
             "channel_id": channel_id,
             "sender_id": sender_id,
-            "conversation_id": f"conversation-{sender_id}",
+            "conversation_id": conversation_id,
             "message": msg,
             "status": "sent",
             "created_at": created_at,

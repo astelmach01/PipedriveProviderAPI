@@ -55,7 +55,7 @@ async def receive_message():
     channel_id = get_attribute(receiving_phone_number, "channel_id")
 
     response = await send_message_to_PD(
-        access_token, sender_id, channel_id, msg, time, conversation_id
+        access_token, sender_id, channel_id, conversation_id, msg, time
     )
     logging.info(response)
 
