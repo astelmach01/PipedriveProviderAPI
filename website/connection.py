@@ -1,5 +1,6 @@
 import logging
 import boto3
+import aiohttp
 from website.settings import settings
 
 client = boto3.client(
@@ -8,6 +9,11 @@ client = boto3.client(
     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     region_name="us-east-2",
 )
+
+session = aiohttp.ClientSession()
+
+
+# ========== AWS DYNAMODB ==========
 
 
 def put_item(phone_number: str, **kwargs):
@@ -52,3 +58,19 @@ def put_access_key(phone_number: str, access_key: str):
 
 def get_access_token(phone_number: str):
     return get_attribute(phone_number, "access_token")
+
+
+# ========== END AWS DYNAMODB ==========
+
+
+# ========== AIOHTTP REQUESTS ==========
+
+
+async def post(url: str, **kwargs) -> aiohttp.ClientResponse:
+    async with session.post(url, **kwargs) as response:
+        return response
+
+async def get(url: str, **kwargs) -> aiohttp.ClientResponse:
+    async with session.get(url, **kwargs) as response:
+        return response
+# ========== END AIOHTTP REQUESTS ==========

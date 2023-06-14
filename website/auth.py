@@ -10,7 +10,7 @@ from quart import Blueprint, redirect, request, render_template
 
 from website.settings import settings
 from website.util import create_redirect_url
-from website.connection import put_item
+from website.connection import put_item, post
 
 api_url = settings.TELEGRAM_API_URL
 
@@ -30,25 +30,26 @@ async def auth1():
         "auth_code": auth_code,
     }
 
-    # when we have received the phone number and auth code from the user
-    async with aiohttp.ClientSession() as session:
-        # create the first session string
-        async with session.post(api_url + "create_string_1", json=payload) as response:
-            res = await response.json()
-            if res["success"]:
-                payload = {"phone_number": phone_number}
-                # create the second_session_string
-                async with session.post(
-                    api_url + "send_code_2", json=payload
-                ) as response:
-                    res = await response.json()
-                    if res["success"]:
-                        phone_code_hash = res["phone_code_hash"]
-                        return await render_template(
-                            "auth2.html",
-                            phone_number=phone_number,
-                            phone_code_hash=phone_code_hash,
-                        )
+    response = await post(api_url + "create_string_1", json=payload)
+    res = await response.json()
+    
+    if not res["success"]:
+        return "Failed to authorize first time"
+
+    payload = {"phone_number": phone_number}
+    response = await post(api_url + "send_code_2", json=payload)
+    res = await response.json()
+
+    if not res["success"]:
+        return "Failed to send code second time"
+    
+    phone_code_hash = res["phone_code_hash"]
+    return await render_template(
+        "auth2.html",
+        phone_number=phone_number,
+        phone_code_hash=phone_code_hash,
+    )
+
 
 
 @auth.route("/auth2", methods=["POST"])
@@ -63,6 +64,7 @@ async def auth2():
         "phone_code_hash": phone_code_hash,
         "auth_code": auth_code,
     }
+
 
     # when we have received the phone number and auth code from the user
     async with aiohttp.ClientSession() as session:
@@ -154,9 +156,8 @@ async def exchange_auth_code(
         "redirect_uri": settings.PIPEDRIVE_CALLBACK_URI,
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=header, data=body) as response:
-            response_data = await response.json()
+    response = await post(url, headers=header, data=body)
+    response_data = await response.json()
 
     return response_data
 
@@ -176,9 +177,8 @@ async def refresh_token(
         "refresh_token": refresh_token,
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=header, data=body) as response:
-            response_data = await response.json()
+    response = await post(url, headers=header, data=body)
+    response_data = await response.json()
 
     access_token = response_data["access_token"]
     refresh_token = response_data["refresh_token"]
