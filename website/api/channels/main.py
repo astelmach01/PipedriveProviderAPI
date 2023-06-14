@@ -60,7 +60,7 @@ async def receive_message():
     json = await response.json()
 
     logging.info(f"Response from Pipedrive: {json}")
-    return jsonify(json)
+    return json
 
 
 # Get conversation by ID

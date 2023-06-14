@@ -5,8 +5,6 @@ from website.settings import settings
 
 import aiohttp
 import quart
-from quart import jsonify
-
 
 async def send_message_to_Telegram(recipient, msg):
     print("Sending message from Pipedrive to Telegram")
@@ -51,14 +49,14 @@ async def send_message_to_PD(
             headers=request_options["headers"],
             json=request_options["body"],
         ) as response:
-            status = str(response.status)[0]
+            status = response.status
 
-            if status == "4" or status == "5":
+            if status != 200:
                 logging.info("Error sending message from Telegram to Pipedrive")
-                return jsonify({"success": False})
+                return {"success": False}
             
             logging.info("Message sent successfully from Telegram to Pipedrive")
-            return jsonify({"success": True})
+            return {"success": True}
 
 
 def create_redirect_url(session: quart.session):
