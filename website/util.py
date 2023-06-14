@@ -50,10 +50,11 @@ async def send_message_to_PD(
             json=request_options["body"],
         ) as response:
             status = response.status
+            
+            logging.info(type(status))
 
             if status != 200 or status != 201:
-                logging.info("Error sending message from Telegram to Pipedrive")
-                logging.info(f"Response from Pipedrive: {await response.text()}, {status}")
+                logging.info(f"Message failed to send from Telegram to Pipedrive with status {status} and response {await response.text()}")
                 return {"success": False}
             
             logging.info("Message sent successfully from Telegram to Pipedrive")
