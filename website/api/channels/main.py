@@ -58,7 +58,7 @@ async def receive_message():
         access_token, sender_id, channel_id, conversation_id, msg, time
     )
     
-    logging.info(f"Response from Pipedrive: {response}")
+    logging.info(f"Response from call: {response}")
     return response
 
 

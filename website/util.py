@@ -49,16 +49,17 @@ async def send_message_to_PD(
             headers=request_options["headers"],
             json=request_options["body"],
         ) as response:
+            
             status = response.status
-            
-            logging.info(type(status))
+        
+            if status == 200 or status == 201:
+                logging.info("Message sent successfully from Telegram to Pipedrive")
+                return {"success": True}
 
-            if status != 200 or status != 201:
-                logging.info(f"Message failed to send from Telegram to Pipedrive with status {status} and response {await response.text()}")
-                return {"success": False}
+            logging.info(f"Message failed to send from Telegram to Pipedrive with status {status} and response {await response.text()}")
+            return {"success": False}
             
-            logging.info("Message sent successfully from Telegram to Pipedrive")
-            return {"success": True}
+            
 
 
 def create_redirect_url(session: quart.session):
