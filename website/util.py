@@ -59,7 +59,7 @@ async def send_message_to_PD(
             else:
                 logging.info("Message sent successfully from Telegram to Pipedrive")
 
-        return jsonify(await response.json())
+            return jsonify(await response.json())
 
 
 def create_redirect_url(session: quart.session):
