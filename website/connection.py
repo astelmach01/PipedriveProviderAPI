@@ -11,7 +11,8 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
-session = aiohttp.ClientSession(loop=asyncio.get_event_loop())
+timeout = aiohttp.ClientTimeout(total=60)
+session = aiohttp.ClientSession()
 
 
 # ========== AWS DYNAMODB ==========
@@ -69,12 +70,12 @@ def get_access_token(phone_number: str):
 
 async def post(url: str, **kwargs) -> aiohttp.ClientResponse:
     async with session:
-        async with session.post(url, **kwargs) as response:
+        async with session.post(url, timeout=timeout, **kwargs) as response:
             return response
 
 async def get(url: str, **kwargs) -> aiohttp.ClientResponse:
     async with session:
-        async with session.get(url, **kwargs) as response:
+        async with session.get(url, timeout=timeout, **kwargs) as response:
             return response
         
 # ========== END AIOHTTP REQUESTS ==========
