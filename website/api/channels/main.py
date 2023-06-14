@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 import aiohttp
-from quart import Blueprint, jsonify, request
+from quart import Blueprint, request
 from website.connection import get_access_token, get_attribute
 
 from website.util import send_message_to_PD, send_message_to_Telegram
