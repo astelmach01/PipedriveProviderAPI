@@ -9,22 +9,17 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
-# ========== AWS DYNAMODB ==========
-
 
 def put_item(phone_number: str, **kwargs):
-    key = {"phone-number": {"S": phone_number}}
-    
     item = dict()
 
     for key, value in kwargs.items():
         item[key] = {"Value": {"S": str(value)}, "Action": "PUT"}
 
     logging.info(f"Updating item {item} with values {kwargs}")
-    
     response = client.update_item(
         TableName=settings.TABLE_NAME,
-        Key=key,
+        Key={"phone-number": {"S": phone_number}},
         AttributeUpdates=item,
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
@@ -57,6 +52,3 @@ def put_access_key(phone_number: str, access_key: str):
 
 def get_access_token(phone_number: str):
     return get_attribute(phone_number, "access_token")
-
-
-# ========== END AWS DYNAMODB ==========
