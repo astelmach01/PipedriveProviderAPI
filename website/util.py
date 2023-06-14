@@ -19,8 +19,6 @@ async def send_message_to_PD(
 ):
     logging.info(f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}")
 
-    created_at = time.strftime("%Y-%m-%d %H:%M")
-
     request_options = {
         "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
         "method": "POST",
@@ -34,7 +32,7 @@ async def send_message_to_PD(
             "conversation_id": conversation_id,
             "message": msg,
             "status": "sent",
-            "created_at": created_at,
+            "created_at": time,
             "attachments": [],
         },
     }
