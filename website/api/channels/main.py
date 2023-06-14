@@ -5,7 +5,7 @@ import aiohttp
 from quart import Blueprint, request
 from website.connection import get_access_key, get_attribute
 
-from website.util import send_message_to_Telegram
+from website.util import send_message_to_PD, send_message_to_Telegram
 
 channels = Blueprint("channels", __name__)
 
@@ -134,43 +134,3 @@ async def conversations(providerChannelId):
     }
 
     return fake_response
-
-
-async def send_message_to_PD(
-    access_token: str,
-    sender_id: str,
-    channel_id: str,
-    msg: str,
-    time: str,
-    conversation_id: str,
-):
-    logging.info("Sending message from Telegram to Pipedrive")
-
-    created_at = time
-
-    request_options = {
-        "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
-        "headers": {
-            "Authorization": f"Bearer {access_token}",
-        },
-        "body": {
-            "id": f"msg-te-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"),
-            "channel_id": channel_id,
-            "sender_id": sender_id,
-            "conversation_id": conversation_id,
-            "message": msg,
-            "status": "sent",
-            "created_at": created_at,
-            "attachments": [],
-        },
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            request_options["uri"],
-            headers=request_options["headers"],
-            json=request_options["body"],
-        ) as response:
-            res = await response.json()
-            logging.info(res)
-            return res

@@ -48,10 +48,10 @@ async def send_message_to_PD(
             status = str(response.status)[0]
 
             if status == "4" or status == "5":
-                print("Error sending message from Telegram to Pipedrive")
-                print(await response.json())
+                logging.info("Error sending message from Telegram to Pipedrive")
+                logging.info(await response.json())
             else:
-                print("Message sent successfully from Telegram to Pipedrive")
+                logging.info("Message sent successfully from Telegram to Pipedrive")
 
 
 def create_redirect_url(session: quart.session):
