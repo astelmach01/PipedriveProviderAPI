@@ -5,6 +5,7 @@ from website.settings import settings
 
 import aiohttp
 import quart
+from quart import jsonify
 
 
 async def send_message_to_Telegram(recipient, msg):
@@ -15,9 +16,16 @@ async def send_message_to_Telegram(recipient, msg):
 
 
 async def send_message_to_PD(
-    access_token: str, sender_id: str, channel_id: str, conversation_id: str, msg: str, time
+    access_token: str,
+    sender_id: str,
+    channel_id: str,
+    conversation_id: str,
+    msg: str,
+    time,
 ):
-    logging.info(f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}")
+    logging.info(
+        f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}"
+    )
 
     request_options = {
         "uri": "https://api.pipedrive.com/v1/channels/messages/receive",
@@ -50,7 +58,8 @@ async def send_message_to_PD(
                 logging.info(await response.json())
             else:
                 logging.info("Message sent successfully from Telegram to Pipedrive")
-    return response
+
+        return jsonify(await response.json())
 
 
 def create_redirect_url(session: quart.session):

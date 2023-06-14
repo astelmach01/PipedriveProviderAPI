@@ -84,7 +84,7 @@ async def get_convo_by_id(providerChannelId, sourceConversationId):
                     "avatar_url": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
                 },
                 {
-                    "id": sourceConversationId.split("-")[1],
+                    "id": sourceConversationId,
                     "name": f"Telegramer Bot 2",
                     "role": "end_user",
                     "avatar_url": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
