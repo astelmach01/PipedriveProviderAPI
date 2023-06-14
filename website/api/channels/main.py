@@ -57,8 +57,8 @@ async def receive_message():
     response = await send_message_to_PD(
         access_token, sender_id, channel_id, conversation_id, msg, time
     )
-
-    logging.info(f"Response from call: {response}")
+    
+    logging.info(f"Response from Pipedrive: {response}")
     return response
 
 
