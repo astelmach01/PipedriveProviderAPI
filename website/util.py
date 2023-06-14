@@ -1,4 +1,6 @@
+import logging
 from datetime import datetime, timezone
+
 from website.settings import settings
 
 import aiohttp
@@ -15,7 +17,7 @@ async def send_message_to_Telegram(recipient, msg):
 async def send_message_to_PD(
     access_token: str, sender_id: str, channel_id: str, msg: str, time
 ):
-    print("Sending message from Telegram to Pipedrive")
+    logging.info(f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}")
 
     created_at = time.strftime("%Y-%m-%d %H:%M")
 
