@@ -33,8 +33,6 @@ async def send_code():
             "pipedrive_client_id": pipedrive_client_id,
             "pipedrive_client_secret": pipedrive_client_secret,
         }
-        
-        put_item(phone_number, pipedrive_client_id=pipedrive_client_id, pipedrive_client_secret=pipedrive_client_secret)
 
         session = quart.session
 
@@ -46,7 +44,6 @@ async def send_code():
             return redirect(create_redirect_url(session))
 
         api_url = settings.TELEGRAM_API_URL
-
 
         # for session stickiness
         async with aiohttp.ClientSession() as session:
