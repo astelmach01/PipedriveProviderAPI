@@ -1,7 +1,5 @@
 import logging
 import boto3
-import aiohttp
-import asyncio
 from website.settings import settings
 
 client = boto3.client(
@@ -11,23 +9,22 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
-timeout = aiohttp.ClientTimeout(total=60)
-session = aiohttp.ClientSession()
-
-
 # ========== AWS DYNAMODB ==========
 
 
 def put_item(phone_number: str, **kwargs):
+    key = {"phone-number": {"S": phone_number}}
+    
     item = dict()
 
     for key, value in kwargs.items():
         item[key] = {"Value": {"S": str(value)}, "Action": "PUT"}
 
     logging.info(f"Updating item {item} with values {kwargs}")
+    
     response = client.update_item(
         TableName=settings.TABLE_NAME,
-        Key={"phone-number": {"S": phone_number}},
+        Key=key,
         AttributeUpdates=item,
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
@@ -63,19 +60,3 @@ def get_access_token(phone_number: str):
 
 
 # ========== END AWS DYNAMODB ==========
-
-
-# ========== AIOHTTP REQUESTS ==========
-
-
-async def post(url: str, **kwargs) -> aiohttp.ClientResponse:
-    async with session:
-        async with session.post(url, timeout=timeout, **kwargs) as response:
-            return response
-
-async def get(url: str, **kwargs) -> aiohttp.ClientResponse:
-    async with session:
-        async with session.get(url, timeout=timeout, **kwargs) as response:
-            return response
-        
-# ========== END AIOHTTP REQUESTS ==========

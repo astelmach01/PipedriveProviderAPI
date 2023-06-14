@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timezone
-from website.connection import post
 
 from website.settings import settings
 
@@ -23,9 +22,6 @@ async def send_message_to_PD(
     msg: str,
     time,
 ):
-    # logging.info(
-    #     f"Sending message from Telegram to Pipedrive with params {msg}, {time}, {sender_id}, {channel_id}, {access_token}"
-    # )
 
     url = "https://api.pipedrive.com/v1/channels/messages/receive"
     

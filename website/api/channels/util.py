@@ -1,24 +1,32 @@
+import aiohttp
 import logging
-
-from website.connection import post
 
 
 async def create_channel_PD(access_token, channel_id, name, provider_type="other"):
-    
-    url = "https://api.pipedrive.com/v1/channels"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
+    request_options = {
+        "url": "https://api.pipedrive.com/v1/channels",
+        "method": "POST",
+        "headers": {
+            "Authorization": f"Bearer {access_token}",
+        },
+        "json": {
+            "name": name,
+            "provider_channel_id": channel_id,
+            "provider_type": provider_type,
+        },
     }
-    json = {
-        "name": name,
-        "provider_channel_id": channel_id,
-        "provider_type": provider_type,
-    }
 
-    response = await post(url, headers=headers, json=json)
-    res = await response.json()
-    status = response.status
-    logging.info(res)
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            request_options["url"],
+            headers=request_options["headers"],
+            json=request_options["json"],
+        ) as response:
+            res = await response.json()
+            status = str(response.status)[0]
+            logging.info(res)
 
-    return status in [200, 201]
+            if status == "4" or status == "5":
+                return False
+            else:
+                return True

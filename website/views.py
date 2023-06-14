@@ -10,65 +10,68 @@ from quart import Blueprint, redirect, request, render_template
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
 from website.util import create_redirect_url
-from website.connection import get, post, put_item
+from website.connection import put_item
 
 views = Blueprint("views", __name__)
 
 
 @views.route("/", methods=["GET", "POST"])
 async def send_code():
-    
-    if request.method == "GET":
-        return await render_template("base.html")
-    
-    # else we got a POST request
-    form = await request.form
-    phone_number = form.get("phone_number")
-    telegram_api_id = form.get("telegram_api_id")
-    telegram_api_hash = form.get("telegram_api_hash")
-    pipedrive_client_id = form.get("pipedrive_client_id")
-    pipedrive_client_secret = form.get("pipedrive_client_secret")
+    if request.method == "POST":
+        form = await request.form
+        phone_number = form.get("phone_number")
+        telegram_api_id = form.get("telegram_api_id")
+        telegram_api_hash = form.get("telegram_api_hash")
+        pipedrive_client_id = form.get("pipedrive_client_id")
+        pipedrive_client_secret = form.get("pipedrive_client_secret")
 
-    # Prepare the payload for the request to the Telegram API
-    payload = {
-        "phone_number": phone_number,
-        "telegram_api_id": telegram_api_id,
-        "telegram_api_hash": telegram_api_hash,
-        "pipedrive_client_id": pipedrive_client_id,
-        "pipedrive_client_secret": pipedrive_client_secret,
-    }
+        # Prepare the payload for the request to the Telegram API
+        payload = {
+            "phone_number": phone_number,
+            "telegram_api_id": telegram_api_id,
+            "telegram_api_hash": telegram_api_hash,
+            "pipedrive_client_id": pipedrive_client_id,
+            "pipedrive_client_secret": pipedrive_client_secret,
+        }
+        
+        put_item(phone_number, pipedrive_client_id=pipedrive_client_id, pipedrive_client_secret=pipedrive_client_secret)
 
-    session = quart.session
+        session = quart.session
 
-    session["phone_number"] = phone_number
-    session["pipedrive_client_id"] = pipedrive_client_id
-    session["pipedrive_client_secret"] = pipedrive_client_secret
+        session["phone_number"] = phone_number
+        session["pipedrive_client_id"] = pipedrive_client_id
+        session["pipedrive_client_secret"] = pipedrive_client_secret
 
-    if "Logged In" in session and session["Logged In"]:
-        return redirect(create_redirect_url(session))
+        if "Logged In" in session and session["Logged In"]:
+            return redirect(create_redirect_url(session))
 
-    api_url = settings.TELEGRAM_API_URL
+        api_url = settings.TELEGRAM_API_URL
 
-    logging.info("Sending sync")
 
-    # for session stickiness
-    response = await get(api_url + "sync", json=payload)
-    
-    response = await post(api_url + "send_code_1", json=payload)
-    res = await response.json()
+        # for session stickiness
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url + "sync", json=payload) as response:
+                res = await response.json()
+                logging.info(res)
 
-    logging.info(res)
-    if res["success"]:
-        phone_code_hash = res["phone_code_hash"]
-        return await render_template(
-            "auth1.html",
-            phone_number=phone_number,
-            phone_code_hash=phone_code_hash,
-        )
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api_url + "send_code_1", json=payload) as response:
+                res = await response.json()
+                logging.info(res)
+                if res["success"]:
+                    phone_code_hash = res["phone_code_hash"]
+                    return await render_template(
+                        "auth1.html",
+                        phone_number=phone_number,
+                        phone_code_hash=phone_code_hash,
+                    )
+
+                else:
+                    # Request failed, handle the error
+                    return "Failed to call Telegram API"
 
     else:
-        # Request failed, handle the error
-        return "Failed to call Telegram API"
+        return await render_template("base.html")
 
 
 @views.route("/create_channel", methods=["GET", "POST"])
