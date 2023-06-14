@@ -46,9 +46,9 @@ async def send_message_to_PD(
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            request_options["uri"],
-            headers=request_options["headers"],
-            json=request_options["body"],
+            url,
+            headers=headers,
+            json=body,
         ) as response:
             status = response.status
             
