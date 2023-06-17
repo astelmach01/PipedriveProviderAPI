@@ -1,10 +1,11 @@
 import logging
-from datetime import datetime, timezone
+import aiohttp
 
 from quart import Blueprint, request
 from website.connection import get_access_token, get_attribute
 
-from website.util import send_message_to_PD, send_message_to_Telegram
+from website.util import send_message_to_PD
+from website.settings import settings
 
 channels = Blueprint("channels", __name__)
 
@@ -16,29 +17,26 @@ async def sender(providerChannelId, senderId):
     return {"success": True, "data": {"id": str(senderId)}}
 
 
-# Post message from pipedrive to Telegram
+# Post message from pipedrive to Telegram 
+# this function is called when you (not the person you are messaging) send a message
 @channels.route("/<providerChannelId>/messages", methods=["POST"])
 async def messages(providerChannelId):
     print("Incoming message from pipedrive")
 
     # Get the multipart form data
     data = await request.form
-    data = data.to_dict()
-
-    message = data["message"]
-    recipient = data["recipientIds[]"]
-    recipient = "+" + recipient
-
-    message_id = "msg-pd-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
-
-    if await send_message_to_Telegram(recipient, message):
-        return {"success": True, "data": {"id": message_id}}
-
-    else:
-        return {"success": False, "data": {"id": message_id}}
+    
+    url = settings.TELEGRAM_API_URL + "api/channels/messages"
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=data) as response:
+            if response.status == 200:
+                logging.info("Multipart form data successfully posted!")
+            else:
+                logging.info("Error occurred while posting multipart form data.")
 
 
 # from telegram to pipedrive
+# this function is called when the person you are messaging sends a message
 @channels.route("/messages/receive", methods=["POST"])
 async def receive_message():
     data = await request.get_json()

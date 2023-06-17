@@ -36,12 +36,12 @@ async def send_code():
 
         session = quart.session
 
+        if "Logged In" in session and session["Logged In"]:
+            return redirect(create_redirect_url(session))
+
         session["phone_number"] = phone_number
         session["pipedrive_client_id"] = pipedrive_client_id
         session["pipedrive_client_secret"] = pipedrive_client_secret
-
-        if "Logged In" in session and session["Logged In"]:
-            return redirect(create_redirect_url(session))
 
         api_url = settings.TELEGRAM_API_URL
 

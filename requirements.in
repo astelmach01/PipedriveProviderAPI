@@ -4,6 +4,8 @@ quart
 aiohttp
 hypercorn
 
+pika
+
 boto3
 cryptg
 requests
@@ -11,4 +13,3 @@ requests
 python-dotenv
 pytest
 pydantic
-pre-commit
