@@ -30,6 +30,7 @@ async def messages(providerChannelId):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             res = await response.json()
+            logging.info(f"Response from Telegram: {res}")
             if response.status == 200:
                 logging.info("Multipart form data successfully posted!")
             else:
