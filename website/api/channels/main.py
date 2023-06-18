@@ -1,3 +1,4 @@
+import datetime
 import logging
 import aiohttp
 
@@ -25,17 +26,12 @@ async def messages(providerChannelId):
 
     # Get the multipart form data
     data = await request.form
-    
+    now = datetime.datetime.now()
     url = settings.TELEGRAM_API_URL + "api/channels/messages"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             res = await response.json()
-            logging.info(f"Response from Telegram: {res}")
-            if response.status == 200:
-                logging.info("Multipart form data successfully posted!")
-            else:
-                logging.info("Error occurred while posting multipart form data.")
-                
+            logging.info(f"Response from Telegram API: {res}") 
             return res
 
 
