@@ -33,6 +33,8 @@ async def messages(providerChannelId):
                 logging.info("Multipart form data successfully posted!")
             else:
                 logging.info("Error occurred while posting multipart form data.")
+                
+        return await response.json()
 
 
 # from telegram to pipedrive
