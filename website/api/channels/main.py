@@ -29,12 +29,13 @@ async def messages(providerChannelId):
     url = settings.TELEGRAM_API_URL + "api/channels/messages"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
+            res = await response.json()
             if response.status == 200:
                 logging.info("Multipart form data successfully posted!")
             else:
                 logging.info("Error occurred while posting multipart form data.")
                 
-            return await response.json()
+            return res
 
 
 # from telegram to pipedrive
