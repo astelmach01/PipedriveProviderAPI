@@ -2,6 +2,7 @@
 Routes
 """
 import logging
+from xml.etree.ElementTree import SubElement
 import aiohttp
 
 import quart
@@ -9,8 +10,8 @@ from quart import Blueprint, redirect, request, render_template
 
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
-from website.util import create_redirect_url
-from website.connection import USER_ACCESS_KEYS, put_channel_id, put_item
+from website.util import create_redirect_url, refresh_token
+from website.connection import USER_ACCESS_KEYS, get_attribute, put_channel_id, put_item
 
 views = Blueprint("views", __name__)
 
@@ -91,6 +92,17 @@ async def create_channel():
             put_channel_id(channel_id, session["phone_number"])
             return await render_template("success.html")
         else:
+            token = get_attribute(USER_ACCESS_KEYS, session["phone_number"], "refresh_token")
+            access_token = await refresh_token(session["phone_number"], session["pipedrive_client_id"], session["pipedrive_client_secret"], token)
+            
+            success = await create_channel_PD(
+                access_token, channel_id, channel_name, provider_type
+            )
+            if success:
+                put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
+                put_channel_id(channel_id, session["phone_number"])
+                return await render_template("success.html")
+            
             return await render_template("error.html")
 
     return await render_template("create_channel.html")
