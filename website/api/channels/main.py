@@ -26,7 +26,7 @@ async def messages(providerChannelId):
 
     # Get the multipart form data
     data = await request.form
-    now = datetime.datetime.now()
+    
     url = settings.TELEGRAM_API_URL + "api/messages/send"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:

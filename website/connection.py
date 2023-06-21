@@ -26,7 +26,7 @@ def put_item(table_name: str, key: str, **kwargs):
     for key, value in kwargs.items():
         item[key] = {"Value": {"S": str(value)}, "Action": "PUT"}
 
-    logging.info(f"Updating item {item} with values {kwargs}")
+    logging.info(f"Putting item {item} with key {key}")
     response = client.update_item(
         TableName=table_name,
         Key=make_key(table_name, key),
@@ -57,14 +57,14 @@ def delete_item(table_name: str, key: str):
 
 # convenience function
 def put_access_key(phone_number: str, access_key: str):
-    return put_item(USER_ACCESS_KEYS, phone_number, access_key=access_key)
+    return put_item(USER_ACCESS_KEYS, key=phone_number, access_key=access_key)
 
 
 def get_access_token(phone_number: str):
-    return get_attribute(USER_ACCESS_KEYS, phone_number, "access_token")
+    return get_attribute(USER_ACCESS_KEYS, key=phone_number, attribute="access_token")
 
 def put_channel_id(channel_id: str, phone_number: str):
-    return put_item(CHANNEL_ID_TO_PHONE_NUMBER, channel_id, phone_number=phone_number)
+    return put_item(CHANNEL_ID_TO_PHONE_NUMBER, key=channel_id, phone_number=phone_number)
 
 def get_phone_number(channel_id: str):
-    return get_attribute(CHANNEL_ID_TO_PHONE_NUMBER, channel_id, "phone_number")
+    return get_attribute(CHANNEL_ID_TO_PHONE_NUMBER, key=channel_id, attribute="phone_number")
