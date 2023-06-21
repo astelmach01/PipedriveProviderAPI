@@ -11,7 +11,7 @@ from quart import Blueprint, redirect, request, render_template
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
 from website.util import create_redirect_url, refresh_token
-from website.connection import USER_ACCESS_KEYS, get_attribute, put_channel_id, put_item
+from website.connection import USER_ACCESS_KEYS, delete_item, get_attribute, put_channel_id, put_item
 
 views = Blueprint("views", __name__)
 
@@ -74,35 +74,40 @@ async def send_code():
 
 @views.route("/create_channel", methods=["GET", "POST"])
 async def create_channel():
-    if request.method == "POST":
-        form = await request.form
-        channel_id = form.get("channel_id")
-        provider_type = form.get("provider_type", "other")
-        channel_name = form.get("channel_name")
+    
+    if request.method == "GET":
+        return await render_template("create_channel.html")
+    
+    form = await request.form
+    channel_id = form.get("channel_id")
+    provider_type = form.get("provider_type", "other")
+    channel_name = form.get("channel_name")
+    
+    put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
+    put_channel_id(channel_id, session["phone_number"])
 
-        session = quart.session
-        access_token = session["access_token"]
+    session = quart.session
+    access_token = session["access_token"]
 
-        success = await create_channel_PD(
-            access_token, channel_id, channel_name, provider_type
-        )
+    success = await create_channel_PD(
+        access_token, channel_id, channel_name, provider_type
+    )
 
-        if success:
-            put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
-            put_channel_id(channel_id, session["phone_number"])
-            return await render_template("success.html")
-        else:
-            token = get_attribute(USER_ACCESS_KEYS, session["phone_number"], "refresh_token")
-            access_token = await refresh_token(session["phone_number"], session["pipedrive_client_id"], session["pipedrive_client_secret"], token)
-            
-            success = await create_channel_PD(
-                access_token, channel_id, channel_name, provider_type
-            )
-            if success:
-                put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
-                put_channel_id(channel_id, session["phone_number"])
-                return await render_template("success.html")
-            
-            return await render_template("error.html")
+    if success:
+        return await render_template("success.html")
+    
+    # If the channel creation failed, try to refresh the token and try again
+    token = get_attribute(USER_ACCESS_KEYS, session["phone_number"], "refresh_token")
+    access_token = await refresh_token(session["phone_number"], session["pipedrive_client_id"], session["pipedrive_client_secret"], token)
+    
+    success = await create_channel_PD(
+        access_token, channel_id, channel_name, provider_type
+    )
+    if success:
+        return await render_template("success.html")
+    
+    put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=None)
+    put_channel_id(channel_id, None)
+    
+    return await render_template("error.html")
 
-    return await render_template("create_channel.html")
