@@ -27,7 +27,7 @@ async def messages(providerChannelId):
     # Get the multipart form data
     data = await request.form
     
-    url = settings.TELEGRAM_API_URL + "api/messages/send"
+    url = settings.TELEGRAM_API_URL + "api/messages/postMessage"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             res = await response.json()
@@ -82,9 +82,8 @@ async def get_convo_by_id(providerChannelId, sourceConversationId):
         "messages_limit": messages_limit,
     }
 
-    # post to telegram API endpoint /api/conversations/getConversationById
     async with aiohttp.ClientSession() as session:
-        async with session.post(
+        async with session.get(
             settings.TELEGRAM_API_URL + "api/conversations/getConversationById", json=body
         ) as response:
             res = await response.json()
@@ -104,9 +103,8 @@ async def conversations(providerChannelId):
         "messages_limit": messages_limit,
     }
     
-    # post to /api/conversations/getConversations
     async with aiohttp.ClientSession() as session:
-        async with session.post(
+        async with session.get(
             settings.TELEGRAM_API_URL + "api/conversations/getConversations", json=body
         ) as response:
             res = await response.json()
