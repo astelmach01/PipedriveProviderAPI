@@ -98,9 +98,12 @@ async def conversations(providerChannelId):
     conversations_limit = request.args.get("conversations_limit", default=10, type=int)
     messages_limit = request.args.get("messages_limit", default=10, type=int)
     
+    sender = get_phone_number(providerChannelId)
+    
     body = {
         "conversations_limit": conversations_limit,
         "messages_limit": messages_limit,
+        "sender": sender,
     }
     
     async with aiohttp.ClientSession() as session:
