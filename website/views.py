@@ -10,7 +10,7 @@ from quart import Blueprint, redirect, request, render_template
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
 from website.util import create_redirect_url
-from website.connection import put_item
+from website.connection import USER_ACCESS_KEYS, put_channel_id, put_item
 
 views = Blueprint("views", __name__)
 
@@ -87,7 +87,8 @@ async def create_channel():
         )
 
         if success:
-            put_item(session["phone_number"], channel_id=channel_id)
+            put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
+            put_channel_id(channel_id, session["phone_number"])
             return await render_template("success.html")
         else:
             return await render_template("error.html")

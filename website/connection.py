@@ -9,8 +9,18 @@ client = boto3.client(
     region_name="us-east-2",
 )
 
+USER_ACCESS_KEYS = "user-access-keys"
+CHANNEL_ID_TO_PHONE_NUMBER = "channel_id-to-phone_number"
 
-def put_item(phone_number: str, **kwargs):
+def make_key(table_name: str, key: str):
+    if table_name == USER_ACCESS_KEYS:
+        return {"phone-number": {"S": key}}
+    
+    elif table_name == CHANNEL_ID_TO_PHONE_NUMBER:
+        return {"channel_id": {"S": key}}
+
+
+def put_item(table_name: str, key: str, **kwargs):
     item = dict()
 
     for key, value in kwargs.items():
@@ -18,17 +28,17 @@ def put_item(phone_number: str, **kwargs):
 
     logging.info(f"Updating item {item} with values {kwargs}")
     response = client.update_item(
-        TableName=settings.TABLE_NAME,
-        Key={"phone-number": {"S": phone_number}},
+        TableName=table_name,
+        Key=make_key(table_name, key),
         AttributeUpdates=item,
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def get_attribute(phone_number: str, attribute: str):
-    logging.info(f"Getting attribute '{attribute}' for phone number '{phone_number}'")
+def get_attribute(table_name: str, key: str, attribute: str):
+    logging.info(f"Getting attribute '{attribute}' for key '{key}'")
     response = client.get_item(
-        TableName=settings.TABLE_NAME, Key={"phone-number": {"S": phone_number}}
+        TableName=table_name, Key=make_key(table_name, key)
     )
     item = response.get("Item")
     if item is not None:
@@ -37,18 +47,24 @@ def get_attribute(phone_number: str, attribute: str):
         return None
 
 
-def delete_item(phone_number: str):
-    logging.info(f"Deleting item for phone number {phone_number}")
+def delete_item(table_name: str, key: str):
+    logging.info(f"Deleting item {key}")
     response = client.delete_item(
-        TableName=settings.TABLE_NAME, Key={"phone-number": {"S": phone_number}}
+        TableName=table_name, Key=make_key(table_name, key)
     )
     return response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
 # convenience function
 def put_access_key(phone_number: str, access_key: str):
-    return put_item(phone_number, access_key=access_key)
+    return put_item(USER_ACCESS_KEYS, phone_number, access_key=access_key)
 
 
 def get_access_token(phone_number: str):
-    return get_attribute(phone_number, "access_token")
+    return get_attribute(USER_ACCESS_KEYS, phone_number, "access_token")
+
+def put_channel_id(channel_id: str, phone_number: str):
+    return put_item(CHANNEL_ID_TO_PHONE_NUMBER, channel_id, phone_number=phone_number)
+
+def get_phone_number(channel_id: str):
+    return get_attribute(CHANNEL_ID_TO_PHONE_NUMBER, channel_id, "phone_number")

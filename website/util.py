@@ -1,7 +1,7 @@
 import base64
 import logging
 from datetime import datetime, timezone, timedelta
-from website.connection import put_item, get_attribute
+from website.connection import USER_ACCESS_KEYS, put_item, get_attribute
 
 from website.settings import settings
 
@@ -42,6 +42,7 @@ async def refresh_token(
     date_expires = datetime.now() + timedelta(seconds=expires_in)
 
     put_item(
+        USER_ACCESS_KEYS,
         phone_number,
         access_token=access_token,
         refresh_token=refresh_token,
@@ -99,9 +100,9 @@ async def send_message_to_PD(
         # refresh the access token if it's expired
         token = await refresh_token(
             receiving_phone_number,
-            get_attribute(receiving_phone_number, "pipedrive_client_id"),
-            get_attribute(receiving_phone_number, "pipedrive_client_secret"),
-            get_attribute(receiving_phone_number, "refresh_token"),
+            get_attribute(USER_ACCESS_KEYS, receiving_phone_number, "pipedrive_client_id"),
+            get_attribute(USER_ACCESS_KEYS, receiving_phone_number, "pipedrive_client_secret"),
+            get_attribute(USER_ACCESS_KEYS, receiving_phone_number, "refresh_token"),
         )
 
         headers = {

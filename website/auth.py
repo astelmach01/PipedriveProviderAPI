@@ -10,7 +10,7 @@ from quart import Blueprint, redirect, request, render_template
 
 from website.settings import settings
 from website.util import create_authorization, create_redirect_url
-from website.connection import put_item
+from website.connection import USER_ACCESS_KEYS, put_item
 
 api_url = settings.TELEGRAM_API_URL
 
@@ -77,6 +77,7 @@ async def auth2():
                 pipedrive_client_secret = session["pipedrive_client_secret"]
 
                 put_item(
+                    USER_ACCESS_KEYS,
                     phone_number,
                     pipedrive_client_id=pipedrive_client_id,
                     pipedrive_client_secret=pipedrive_client_secret,
@@ -128,6 +129,7 @@ async def pipedrive_authorized():
     session["refresh_token"] = refresh_token
 
     put_item(
+        USER_ACCESS_KEYS,
         session["phone_number"],
         access_token=access_token,
         refresh_token=refresh_token,

@@ -3,7 +3,7 @@ import logging
 import aiohttp
 
 from quart import Blueprint, request
-from website.connection import get_access_token, get_attribute
+from website.connection import USER_ACCESS_KEYS, get_access_token, get_attribute, get_phone_number
 
 from website.util import send_message_to_PD
 from website.settings import settings
@@ -27,7 +27,7 @@ async def messages(providerChannelId):
     # Get the multipart form data
     data = await request.form
     now = datetime.datetime.now()
-    url = settings.TELEGRAM_API_URL + "api/channels/messages"
+    url = settings.TELEGRAM_API_URL + "api/messages/send"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             res = await response.json()
@@ -49,7 +49,7 @@ async def receive_message():
 
     # database call here
     access_token = get_access_token(receiving_phone_number)
-    channel_id = get_attribute(receiving_phone_number, "channel_id")
+    channel_id = get_attribute(USER_ACCESS_KEYS, receiving_phone_number, "channel_id")
 
     response = await send_message_to_PD(
         access_token,
@@ -69,71 +69,48 @@ async def receive_message():
 @channels.route("/<providerChannelId>/conversations/<sourceConversationId>")
 async def get_convo_by_id(providerChannelId, sourceConversationId):
     # forward to telegram API here
-
-    fake_response = {
-        "success": True,
-        "data": {
-            "id": f"{sourceConversationId}",
-            "link": f"https://example.com/{providerChannelId}/{sourceConversationId}",
-            "status": "open",
-            "seen": True,
-            "next_messages_cursor": "c-next",
-            "messages": [],
-            "participants": [
-                {
-                    "id": "sender-pd-1",
-                    "name": f"Pipedriver Bot",
-                    "role": "source_user",
-                    "avatar_url": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
-                },
-                {
-                    "id": sourceConversationId,
-                    "name": f"Telegramer Bot 2",
-                    "role": "end_user",
-                    "avatar_url": "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
-                },
-            ],
-        },
-        "additional_data": {
-            "after": None,
-        },
+    messages_limit = request.args.get("messages_limit", default=0, type=int)
+    if messages_limit == 0:
+        messages_limit = None
+        
+    sender = get_phone_number(providerChannelId)
+    conversation_id = sourceConversationId
+    
+    body = {
+        "sender": sender,
+        "conversation_id": conversation_id,
+        "messages_limit": messages_limit,
     }
-    print(fake_response)
-    return fake_response
+
+    # post to telegram API endpoint /api/conversations/getConversationById
+    with aiohttp.ClientSession() as session:
+        async with session.post(
+            settings.TELEGRAM_API_URL + "api/conversations/getConversationById", json=body
+        ) as response:
+            res = await response.json()
+            logging.info(f"Response from Telegram API: {res}")
+            return res
 
 
 # get conversations
 @channels.route("/<providerChannelId>/conversations")
 async def conversations(providerChannelId):
-    print("getting conversations")
+    
     conversations_limit = request.args.get("conversations_limit", default=10, type=int)
     messages_limit = request.args.get("messages_limit", default=10, type=int)
-    after = request.args.get("after")
-
-    me = {
-        "id": "me",
-        "name": "Me",
-        "role": "end_user",
-        "avatar_url": "https://robohash.org/mxtouwlpxqjqtxiltdui?set=set1&bgset=&size=48x48",
+    
+    body = {
+        "conversations_limit": conversations_limit,
+        "messages_limit": messages_limit,
     }
-    participants_list = [me, me]
+    
+    # post to /api/conversations/getConversations
+    with aiohttp.ClientSession() as session:
+        async with session.post(
+            settings.TELEGRAM_API_URL + "api/conversations/getConversations", json=body
+        ) as response:
+            res = await response.json()
+            logging.info(f"Response from Telegram API: {res}")
+            return res
 
-    fake_response = {
-        "success": True,
-        "data": [
-            {
-                "id": "conversation-5203254821",
-                "link": "www.example.com",
-                "status": "open",
-                "seen": True,
-                "next_messages_cursor": None,
-                "messages": [],
-                "participants": participants_list,
-            }
-        ],
-        "additional_data": {
-            "after": "c-next",
-        },
-    }
-
-    return fake_response
+    
