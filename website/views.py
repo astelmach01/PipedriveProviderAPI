@@ -2,16 +2,14 @@
 Routes
 """
 import logging
-from xml.etree.ElementTree import SubElement
 import aiohttp
 
-import quart
 from quart import Blueprint, redirect, request, render_template
 
 from website.api.channels.util import create_channel_PD
 from website.settings import settings
 from website.util import create_redirect_url, refresh_token
-from website.connection import USER_ACCESS_KEYS, delete_item, get_attribute, put_channel_id, put_item
+from website.connection import USER_ACCESS_KEYS, get_attribute, put_channel_id, put_item
 
 views = Blueprint("views", __name__)
 
@@ -83,6 +81,7 @@ async def create_channel():
     provider_type = form.get("provider_type", "other")
     channel_name = form.get("channel_name")
     
+    session = quart.session
     put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=channel_id)
     put_channel_id(channel_id, session["phone_number"])
 
