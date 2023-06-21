@@ -83,7 +83,7 @@ async def get_convo_by_id(providerChannelId, sourceConversationId):
     }
 
     # post to telegram API endpoint /api/conversations/getConversationById
-    with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession() as session:
         async with session.post(
             settings.TELEGRAM_API_URL + "api/conversations/getConversationById", json=body
         ) as response:
@@ -105,7 +105,7 @@ async def conversations(providerChannelId):
     }
     
     # post to /api/conversations/getConversations
-    with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession() as session:
         async with session.post(
             settings.TELEGRAM_API_URL + "api/conversations/getConversations", json=body
         ) as response:
