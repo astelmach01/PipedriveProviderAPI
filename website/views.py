@@ -89,25 +89,31 @@ async def create_channel():
     session = quart.session
     access_token = session["access_token"]
 
-    success = await create_channel_PD(
+    success, response_code = await create_channel_PD(
         access_token, channel_id, channel_name, provider_type
     )
 
     if success:
         return await render_template("success.html")
     
+    if not success and response_code != 401:
+        put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=None)
+        put_channel_id(channel_id, None)
+        return await render_template("error.html")
+    
     # If the channel creation failed, try to refresh the token and try again
     token = get_attribute(USER_ACCESS_KEYS, session["phone_number"], "refresh_token")
     access_token = await refresh_token(session["phone_number"], session["pipedrive_client_id"], session["pipedrive_client_secret"], token)
     
-    success = await create_channel_PD(
+    success, response_code = await create_channel_PD(
         access_token, channel_id, channel_name, provider_type
     )
+    
     if success:
         return await render_template("success.html")
     
+    
     put_item(USER_ACCESS_KEYS, session["phone_number"], channel_id=None)
     put_channel_id(channel_id, None)
-    
     return await render_template("error.html")
 

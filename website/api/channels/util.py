@@ -23,10 +23,5 @@ async def create_channel_PD(access_token, channel_id, name, provider_type="other
             json=request_options["json"],
         ) as response:
             res = await response.json()
-            status = str(response.status)[0]
-            logging.info(res)
-
-            if status == "4" or status == "5":
-                return False
-            else:
-                return True
+            logging.info(f"Response from Pipedrive for creating channel: {res}")
+            return res['success'], response.status
